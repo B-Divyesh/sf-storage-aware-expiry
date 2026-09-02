@@ -1,12 +1,14 @@
 {
-  "navigationFallback": {
-    "rewrite": "/index.html",
-    "exclude": ["/assets/*", "/*.webmanifest", "/*.xml", "/*.txt", "/sw.js"]
-  },
   "responseOverrides": {
     "404": {"rewrite": "/404.html"}
   },
   "routes": [
+    {"route": "/demo", "rewrite": "/index.html"},
+    {"route": "/settings", "rewrite": "/index.html"},
+    {"route": "/privacy", "rewrite": "/index.html"},
+    {"route": "/terms", "rewrite": "/index.html"},
+    {"route": "/print-all", "rewrite": "/index.html"},
+    {"route": "/print/*", "rewrite": "/index.html"},
     {
       "route": "/assets/*",
       "headers": {"Cache-Control": "public, max-age=31536000, immutable"}

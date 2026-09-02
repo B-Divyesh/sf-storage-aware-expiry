@@ -288,8 +288,12 @@ test('regression: every application route has route-specific metadata and the st
   const static404 = await request.get('/404.html');
   expect(static404.ok()).toBe(true);
   expect(await static404.text()).toContain('<h1>Page not found</h1>');
-  const config = JSON.parse(await readFile(join(process.cwd(), 'dist/staticwebapp.config.json'), 'utf8')) as { responseOverrides: Record<string, { rewrite: string }> };
+  const config = JSON.parse(await readFile(join(process.cwd(), 'dist/staticwebapp.config.json'), 'utf8')) as { responseOverrides: Record<string, { rewrite: string }>; navigationFallback?: unknown; routes: Array<{ route: string; rewrite?: string }> };
   expect(config.responseOverrides['404'].rewrite).toBe('/404.html');
+  expect(config.navigationFallback).toBeUndefined();
+  for (const route of ['/demo', '/settings', '/privacy', '/terms', '/print-all', '/print/*']) {
+    expect(config.routes).toContainEqual({ route, rewrite: '/index.html' });
+  }
 });
 
 test('@claim:preset-settings saves user date presets', async ({ page }) => {
