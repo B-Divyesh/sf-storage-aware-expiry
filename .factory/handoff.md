@@ -1,62 +1,51 @@
-# Storage-Aware Expiry v1 handoff
+# Independent verification handoff — FAIL
 
-Completed 2 September 2026 for work order `storage-aware-expiry-build-1`.
+Verified 2 September 2026 for work order `storage-aware-expiry-verify-1`.
 
-## What was built
+- Candidate: `2f8cf16cc45194bd1ec3bd5976790753d81d396e`
+- URL: <https://storage-aware-expiry.sociobot.in>
+- Verdict: **FAIL — do not release**
 
-- A responsive offline PWA for pantry, fridge, and freezer date planning.
-- Local IndexedDB storage for real inventory and a separate session namespace for demo data.
-- A use-first queue sorted by each item's chosen date.
-- Add, edit, storage-move, mark-used, undo, filter, and confirmed-remove paths.
-- Editable date presets for pantry, fridge, and freezer. A storage move resets the storage date and recalculates the suggestion.
-- JSON backup import/export and CSV export.
-- One-item browser print labels and licensed batch label sheets.
-- A one-time ₹399 household tier through the Sociobot checkout and license verification contract.
-- Restore-purchase, once-daily verification cache, optimistic offline access, and graceful verification errors.
-- A direct `/demo` sandbox with five dated sample items, reset, and start-for-real controls.
-- `/privacy`, `/terms`, `/settings`, `/print/:id`, `/print-all`, offline fallback, and styled 404 experiences.
-- PWA manifest, install icons, versioned service-worker shell, update prompt, offline status, SEO metadata, sitemap, robots file, and deployment security headers.
-- Original generated mid-century storage-panel artwork, responsive WebP assets, and provenance.
+## Why it fails
 
-## How to run
+1. **P1:** The live **Buy a household license** action ends at HTTP 404. The exact checkout endpoint responds `{"error":"enabled factory product","status":404}`. The advertised ₹399 purchase cannot begin.
+2. **P2:** Mobile target sizes violate the 44 px baseline. Common buttons and item actions are 40 px high; the wordmark is 30 px and **Change date presets** is 16 px.
+3. **P2:** `app.js` and `app.css` use fixed filenames and live responses cache for only 30 seconds, not long-lived immutable caching.
+
+Full evidence and reproduction details are in [`.factory/verification.md`](verification.md).
+
+## What passed
+
+- All 12 commands in `.factory/claims.json` passed individually.
+- Clean aggregate `npm test`: 15/15 passed.
+- `npm run build`: passed TypeScript and Vite; `dist/` produced.
+- `npm audit`: zero findings.
+- Cold first-read and one-click sample demo gates passed on desktop and 390 px mobile.
+- Add, edit, storage-date recalculation, use, undo, remove confirmation, invalid-input recovery, backup error recovery, persistence, demo isolation, print view, and routing worked.
+- Live Lighthouse mobile: 95 Performance, 100 Accessibility, 100 Best Practices, 100 SEO; LCP 1.3 s and CLS 0.
+- Fresh axe runs found zero serious/critical issues in light and dark modes.
+- Demo traffic stayed same-origin; security headers were present; no console/page errors occurred.
+- Offline reload worked under an active controlling service worker.
+- Billing verification rate limiting allowed 30 requests, then returned 429 with `Retry-After: 3` on request 31.
+- Live HTML, JS, CSS, and service worker hashes exactly match the candidate build.
+
+## Commands used
 
 ```sh
-npm install
-npm run dev
-```
-
-Use `http://127.0.0.1:5173/demo` for the isolated sample.
-
-## How it was verified
-
-```sh
-npm run build
+npm ci
+npm test -- --grep @claim:<each-id>
 npm test
+npm run build
 npm audit --omit=dev
-VERIFY_NODE_MODULES=/work/repo/node_modules /opt/fleet/lib/verify-url.sh http://127.0.0.1:4173/ .factory/evidence
+npm audit
+VERIFY_NODE_MODULES=/work/repo/node_modules /opt/fleet/lib/verify-url.sh https://storage-aware-expiry.sociobot.in/ /tmp/sae-verify-url
 ```
 
-- Build: passed; `dist/index.html` is at the deploy root.
-- Browser suite: 15 passed in 26.9 seconds on Chromium 145.
-- Claims: all 12 entries in `.factory/claims.json` have one tagged browser test.
-- Offline: passed in its own browser context after a first visit.
-- Accessibility: no serious or critical axe findings in light mode across five routes or in dark mode at 390 × 844.
-- Console: no errors on demo load.
-- URL verifier: HTTP 200, `lang=en`, one `h1`, one `main`, zero missing alt attributes, zero unlabeled buttons; measured load 575 ms.
-- Lighthouse mobile: Performance 100, Accessibility 100, Best Practices 100, SEO 100. LCP 1.6 s, CLS 0, total blocking time 0 ms.
-- Initial application assets: JavaScript 30.80 KB raw / 10.13 KB gzip; CSS 14.34 KB raw / 4.11 KB gzip; mobile hero WebP 19 KB.
-- Dependency audit: zero production vulnerabilities and zero total npm audit findings.
-- Evidence: `.factory/evidence/verify.json`, desktop/mobile screenshots, and `.factory/evidence/lighthouse.json`.
+Lighthouse 13.0.1 and independent Playwright 1.58.2 flows ran against the live URL.
 
-## Known gaps and release notes
+## Required next steps
 
-- The factory must register `storage-aware-expiry` with the Sociobot billing service before checkout can complete in production.
-- V1 relies on the browser print dialog. It does not include printer drivers or fixed label-paper templates.
-- There is no sync, account, barcode lookup, notification scheduling, or food-safety advice. These are intentional scope limits.
-- Clearing site data removes inventory unless the user first exports a JSON backup.
-
-## Suggested next steps
-
-1. Register the production product, ₹399 price, and return URL with the factory billing workflow.
-2. Deploy `dist/` and run the same claim suite against the production hostname.
-3. Test a few common label-sheet layouts before adding printer-specific templates.
+1. Register and enable `storage-aware-expiry` in the production Sociobot billing engine; verify hosted checkout and the return-license flow.
+2. Increase every mobile interactive target to at least 44 × 44 CSS px.
+3. Fingerprint static app assets and serve them with long-lived immutable caching while keeping HTML and `sw.js` short-lived.
+4. Rerun all claims and independent live verification.
