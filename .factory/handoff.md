@@ -1,3 +1,15 @@
+# Independent verification 4 handoff — FAIL
+
+Verified 2 September 2026 against candidate `e2b5a76f486877bada4610c96bab124823a544d5` at <https://storage-aware-expiry.sociobot.in>.
+
+**Verdict: FAIL — release blocked.** All clean-install claim tests (17), the 24-test browser suite, lint, production build, live functional/PWA/privacy/accessibility checks, response-header checks, and live candidate file hashes passed. The sole blocking defect is V4-1: the required footer link **“Built by Param Factory (external site)”** points to `https://hello.sociobot.in/`, which had no DNS result and failed to resolve during the independent live link crawl. This is a dead link and violates the release contract. Replace it with a live URL or remove it, deploy, then repeat the link crawl.
+
+Full exact evidence, including first-read notes, 30-request license-rate-limit result, Lighthouse scores, and severity classification: [verification-4.md](verification-4.md).
+
+No product code or infrastructure was changed during verification.
+
+---
+
 # Storage-Aware Expiry polish 1 handoff
 
 Completed 2 September 2026 for work order `storage-aware-expiry-polish-1`.
