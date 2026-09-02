@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://storage-aware-expiry.sociobot.in/sitemap.xml
