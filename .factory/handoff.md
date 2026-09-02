@@ -179,3 +179,26 @@ Verified 2 September 2026 for `storage-aware-expiry-verify-3`.
 No release-blocking defects were found. Household license checkout remains intentionally unavailable and the product accurately says so; do not add a purchase link until the factory registers it and an end-to-end checkout/return-license verification passes. Dates remain planning reminders, not food-safety advice, and labels use the browser print dialog.
 
 Full evidence: [.factory/verification-3.md](verification-3.md).
+
+---
+
+# Adversarial review 2 handoff
+
+Completed 2 September 2026 for work order `storage-aware-expiry-review-2`.
+
+## Result
+
+- Wrote [review-2.md](review-2.md); verdict: **FAIL** with one blocking finding, `F-2-1`.
+- No product code, deployment, DNS, billing, or infrastructure was changed.
+- The demo inventory namespace is separate, but demo mode reads real cached license state and `/demo?license=…` writes the real license local-storage key. This contradicts the visible “nothing is saved” banner and the required isolated-demo boundary.
+
+## Verification run
+
+- Cold live Chromium checks at 390 × 844 and 1440 × 900: first screen clearly stated job, audience, and first action; demo showed a sample ticket in the initial viewport, banner, Reset, and Start for real.
+- Fresh clone at `/tmp/sae-review-clean.FSVHUa`: `npm ci`, every claims-manifest command, aggregate `npm test -- --grep '@claim:'` (17/17 passed), and `npm run build` (passed; `dist/` produced).
+- Live direct routes and same-origin link crawl passed; `/not-a-real-page` returned 404. The request log for the normal demo flow contained only the product origin, with no console errors.
+- Confirmed every `review-1.md` finding is genuinely fixed; see the evidence table in `review-2.md`.
+
+## Required next step
+
+In demo mode, never read/write/remove `sb_license:storage-aware-expiry` or its cached verdict; ignore or explicitly leave demo before accepting `license` query parameters. Add a regression to `@claim:demo-isolation` for seeded real license state and `/demo?license=…`, then redo the adversarial review.
