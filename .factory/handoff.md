@@ -19,7 +19,13 @@ Completed 2 September 2026 for work order `storage-aware-expiry-repair-2`.
 
 ## Deployment and live evidence
 
-Pending commit, push, scoped static deployment, and final live crawl at the time this entry was written.
+- Committed and pushed the repair as `f011fb2275dc30809ef8e91fe3bbc52c8f1c8dd6` (`fix: replace dead Param Factory footer link`).
+- Deployed only the scoped Static Web App `sf-storage-aware-expiry` from `dist/`; Azure deployment `6fa61eac-665e-415b-ad3b-c1c85e0402e9` completed successfully. The production URL is <https://storage-aware-expiry.sociobot.in>.
+- Live `/opt/fleet/lib/verify-url.sh` passed: HTTP 200, correct title/language, one `h1`, one `main`, no missing image alternatives or button labels, and no console errors.
+- A fresh live Chromium run covered desktop and 390 × 844 mobile. It found no horizontal overflow, opened the mobile menu with Settings visible, put the skip link in focus on the first Tab, and had zero serious/critical Axe findings. Screenshots: `/tmp/storage-aware-expiry-repair-2-live-desktop.png` and `/tmp/storage-aware-expiry-repair-2-live-mobile.png`.
+- In a separate live browser context, the active service worker updated successfully, then `/demo` reloaded offline with **Baby spinach** and the offline notice. The demo request recording contained only `https://storage-aware-expiry.sociobot.in` and browser console/page errors were empty.
+- Live link crawl covered all seven public route views, including the true 404 page. All **15** distinct non-fragment public HTTP(S) links returned successful responses; this includes `https://hello-factory.sociobot.in/` (HTTP 200). `mailto:` and same-page fragment links were excluded because they do not make HTTP requests. The 404 document itself returns HTTP 404 and its footer contains only the live storefront hostname.
+- Deployed identity matches the built artifact byte-for-byte for `index.html`, `manifest.webmanifest`, `sw.js`, and the fingerprinted JS/CSS. Live headers include HSTS, CSP with `frame-ancestors 'none'`, nosniff, strict-origin referrer policy, permissions policy, revalidating HTML, and immutable fingerprinted assets.
 
 ---
 
