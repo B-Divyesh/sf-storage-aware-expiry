@@ -40,11 +40,11 @@ test('@claim:csv-export exports all sample records', async ({ page }) => {
 test('@claim:print-label creates a printable freezer label', async ({ page }) => {
   await page.goto('/demo');
   const soup = page.locator('.item-ticket', { hasText: 'Lentil soup' });
-  await soup.getByRole('link', { name: 'Print' }).click();
+  await soup.first().getByRole('link', { name: 'Print label for Lentil soup' }).click();
   await page.emulateMedia({ media: 'print' });
   await expect(page.locator('.print-label')).toBeVisible();
   await expect(page.locator('.print-label')).toContainText('Lentil soup');
-  await expect(page.locator('.print-label')).toContainText('Use by');
+  await expect(page.locator('.print-label')).toContainText('Planned for');
 });
 
 test('@claim:local-only sends no inventory data off origin', async ({ page }) => {
@@ -117,14 +117,14 @@ test('@claim:item-workflow adds, edits, completes, and restores an item', async 
   await page.getByRole('button', { name: 'Add item to the list' }).click();
   const ticket = page.locator('.item-ticket', { hasText: 'Tomato sauce' });
   await expect(ticket).toBeVisible();
-  await ticket.getByRole('button', { name: 'Edit' }).click();
+  await ticket.getByRole('button', { name: 'Edit Tomato sauce' }).click();
   await page.locator('#quantity').fill('2 jars');
   await page.locator('#location').selectOption('freezer');
   await expect(page.locator('#stored-on')).toHaveValue(futureDate(0));
   await expect(page.locator('#planned-date')).toHaveValue(futureDate(90));
   await page.getByRole('button', { name: 'Save item changes' }).click();
   await expect(page.locator('.item-ticket', { hasText: 'Tomato sauce' })).toContainText('2 jars');
-  await page.locator('.item-ticket', { hasText: 'Tomato sauce' }).getByRole('button', { name: 'Mark used' }).click();
+  await page.locator('.item-ticket', { hasText: 'Tomato sauce' }).getByRole('button', { name: 'Mark Tomato sauce used' }).click();
   await expect(page.locator('.item-ticket', { hasText: 'Tomato sauce' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Undo' }).click();
   await expect(page.locator('.item-ticket', { hasText: 'Tomato sauce' })).toBeVisible();
@@ -166,19 +166,130 @@ test('load produces no console errors', async ({ page }) => {
 
 test('@claim:json-backup exports and imports a JSON backup', async ({ page }) => {
   await page.goto('/settings?demo=1');
+  await page.locator('#preset-pantry').fill('14');
+  await page.getByRole('button', { name: 'Save date presets' }).click();
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Export JSON backup' }).click();
   const download = await downloadPromise;
   expect(download.suggestedFilename()).toBe('storage-aware-expiry-backup.json');
-  const backup = {
-    version: 1,
-    presets: { pantry: 14, fridge: 4, freezer: 120 },
-    items: [{ id: 'imported', name: 'Coconut curry', quantity: '2 portions', location: 'freezer', storedOn: futureDate(0), frozenOn: futureDate(0), plannedDate: futureDate(120), note: 'Imported', createdAt: new Date().toISOString() }]
-  };
-  await page.locator('#import-json').setInputFiles({ name: 'backup.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(backup)) });
-  await expect(page.locator('#import-status')).toContainText('1 items were imported');
+  const stream = await download.createReadStream();
+  let raw = '';
+  for await (const chunk of stream!) raw += chunk.toString();
+  const backup = JSON.parse(raw) as { version: number; presets: { pantry: number; fridge: number; freezer: number }; items: Array<{ name: string }> };
+  expect(backup.version).toBe(1);
+  expect(backup.presets).toEqual({ pantry: 14, fridge: 5, freezer: 90 });
+  expect(backup.items).toHaveLength(5);
+  expect(backup.items.map(item => item.name)).toEqual(expect.arrayContaining(['Baby spinach', 'Lentil soup', 'Plain yogurt', 'Summer berries', 'Brown rice']));
+  await page.evaluate(() => sessionStorage.removeItem('demo:storage-aware-expiry:v1'));
+  await page.reload();
+  await page.locator('#import-json').setInputFiles({ name: 'storage-aware-expiry-backup.json', mimeType: 'application/json', buffer: Buffer.from(raw) });
+  await expect(page.locator('#import-status')).toContainText('5 items were imported');
   await page.goto('/demo');
-  await expect(page.getByText('Coconut curry').first()).toBeVisible();
+  await expect(page.locator('#preset-pantry')).toHaveCount(0);
+  await expect(page.locator('.item-ticket')).toHaveCount(5);
+  await expect(page.getByText('Lentil soup').first()).toBeVisible();
+  await page.goto('/settings?demo=1');
+  await expect(page.locator('#preset-pantry')).toHaveValue('14');
+});
+
+test('@claim:real-persistence keeps a saved item after reload and in a second page', async ({ browser }) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await page.goto('http://127.0.0.1:4173/');
+  await page.locator('#item-name').fill('Reloaded chili');
+  await page.getByRole('button', { name: 'Add item to the list' }).click();
+  await page.reload();
+  await expect(page.locator('.item-ticket', { hasText: 'Reloaded chili' })).toBeVisible();
+  const secondPage = await context.newPage();
+  await secondPage.goto('http://127.0.0.1:4173/');
+  await expect(secondPage.locator('.item-ticket', { hasText: 'Reloaded chili' })).toBeVisible();
+  await context.close();
+});
+
+test('@claim:license-verification checks only the pasted token with Sociobot and reports valid or invalid results', async ({ page }) => {
+  const requests: Array<{ url: URL; body: string | null }> = [];
+  let valid = true;
+  await page.route('https://api.sociobot.in/api/v1/products/storage-aware-expiry/verify?**', async route => {
+    requests.push({ url: new URL(route.request().url()), body: route.request().postData() });
+    await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ valid, reason: valid ? 'ok' : 'invalid' }) });
+  });
+  await page.goto('/settings');
+  await page.locator('#license-token').fill('valid-fixture-token');
+  await page.getByRole('button', { name: 'Check existing license' }).click();
+  await expect(page.getByText('Your existing household license is active on this browser.')).toBeVisible();
+  expect(requests).toHaveLength(1);
+  expect(requests[0].url.searchParams.get('license')).toBe('valid-fixture-token');
+  expect([...requests[0].url.searchParams.keys()]).toEqual(['license']);
+  expect(requests[0].body).toBeNull();
+  valid = false;
+  await page.locator('#license-token').fill('invalid-fixture-token');
+  await page.getByRole('button', { name: 'Check existing license' }).click();
+  await expect(page.getByText('The free plan holds 20 active items. Household license checkout is currently unavailable.')).toBeVisible();
+  expect(requests).toHaveLength(2);
+  expect(requests[1].url.searchParams.get('license')).toBe('invalid-fixture-token');
+});
+
+test('@claim:editable-optional-fields saves a manual planned date and blank optional fields', async ({ page }) => {
+  const frozenOn = futureDate(-7);
+  const planned = futureDate(16);
+  await page.goto('/demo');
+  await page.locator('#item-name').fill('Unseasoned stock');
+  await page.locator('#quantity').fill('');
+  await page.locator('#location').selectOption('freezer');
+  await page.locator('#stored-on').fill(frozenOn);
+  await page.locator('#planned-date').fill(planned);
+  await page.locator('#note').fill('');
+  await page.getByRole('button', { name: 'Add item to the list' }).click();
+  await page.reload();
+  const ticket = page.locator('.item-ticket', { hasText: 'Unseasoned stock' });
+  await expect(ticket).toContainText('Quantity not set');
+  await ticket.getByRole('button', { name: 'Edit Unseasoned stock' }).click();
+  await expect(page.locator('#stored-on')).toHaveValue(frozenOn);
+  await expect(page.locator('#planned-date')).toHaveValue(planned);
+  await expect(page.locator('#quantity')).toHaveValue('');
+  await expect(page.locator('#note')).toHaveValue('');
+});
+
+test('@claim:limited-scope states that this planner does not scan, track nutrition, or follow purchases', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByText('It does not scan barcodes, track nutrition, or follow every purchase.')).toBeVisible();
+});
+
+test('regression: demo shows a sample item inside the first 390px viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/demo');
+  await expect(page.locator('.item-ticket').first()).toBeVisible();
+  const visible = await page.locator('.item-ticket').evaluateAll(items => items.slice(0, 3).some(item => {
+    const rect = item.getBoundingClientRect();
+    return rect.top < innerHeight && rect.bottom > 0;
+  }));
+  expect(visible).toBe(true);
+  await expect(page.locator('.item-ticket').first()).toContainText('Planned for');
+  await expect(page.locator('.item-ticket').first().getByRole('button', { name: /Mark .* used/ })).toBeVisible();
+  await expect(page.locator('.item-ticket').first().getByRole('button', { name: /Edit / })).toBeVisible();
+  await expect(page.locator('.item-ticket').first().getByRole('link', { name: /Print label for/ })).toBeVisible();
+});
+
+test('regression: every application route has route-specific metadata and the static 404 policy', async ({ page, request }) => {
+  const routes = [
+    ['/', 'Storage-Aware Expiry — Plan what to use first'], ['/demo', 'Demo — Storage-Aware Expiry'], ['/settings', 'Settings — Storage-Aware Expiry'],
+    ['/privacy', 'Privacy — Storage-Aware Expiry'], ['/terms', 'Terms — Storage-Aware Expiry'], ['/print/sample-soup?demo=1', 'Print labels — Storage-Aware Expiry'], ['/not-a-real-page', 'Page not found — Storage-Aware Expiry']
+  ];
+  for (const [route, title] of routes) {
+    await page.goto(route);
+    await expect(page).toHaveTitle(title);
+    const canonical = await page.locator('link[rel="canonical"]').getAttribute('href');
+    const ogUrl = await page.locator('meta[property="og:url"]').getAttribute('content');
+    expect(canonical).toBe(ogUrl);
+    const expectedPath = route.startsWith('/not-a-real-page') ? '/404' : route.split('?')[0];
+    expect(ogUrl).toContain(expectedPath === '/' ? 'sociobot.in/' : expectedPath);
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /.+/);
+  }
+  const static404 = await request.get('/404.html');
+  expect(static404.ok()).toBe(true);
+  expect(await static404.text()).toContain('<h1>Page not found</h1>');
+  const config = JSON.parse(await readFile(join(process.cwd(), 'dist/staticwebapp.config.json'), 'utf8')) as { responseOverrides: Record<string, { rewrite: string }> };
+  expect(config.responseOverrides['404'].rewrite).toBe('/404.html');
 });
 
 test('@claim:preset-settings saves user date presets', async ({ page }) => {

@@ -195,6 +195,36 @@ const pageTitles: Record<string, string> = {
   '/terms': 'Terms — Storage-Aware Expiry'
 };
 
+const siteUrl = 'https://storage-aware-expiry.sociobot.in';
+const routeMetadata: Record<string, { title: string; description: string }> = {
+  '/': { title: pageTitles['/'], description: 'Plan pantry, fridge, and freezer dates. See what to use first, print labels, and keep every item on your device.' },
+  '/demo': { title: pageTitles['/demo'], description: 'Try five sample pantry, fridge, and freezer items. Demo changes are separate from your saved items.' },
+  '/settings': { title: pageTitles['/settings'], description: 'Set storage date presets and export or import your household item list.' },
+  '/privacy': { title: pageTitles['/privacy'], description: 'Read how Storage-Aware Expiry stores household items in your browser.' },
+  '/terms': { title: pageTitles['/terms'], description: 'Read the terms and food-safety limits for Storage-Aware Expiry.' },
+  '/404': { title: 'Page not found — Storage-Aware Expiry', description: 'The requested Storage-Aware Expiry page was not found.' }
+};
+
+function setMeta(selector: string, value: string) {
+  document.querySelector<HTMLMetaElement>(selector)?.setAttribute('content', value);
+}
+
+function setRouteMetadata(path: string) {
+  const key = path.startsWith('/print/') || path === '/print-all' ? '/print' : (routeMetadata[path] ? path : '/404');
+  const metadata = key === '/print'
+    ? { title: 'Print labels — Storage-Aware Expiry', description: 'Print a planned-date label for a stored household item.' }
+    : routeMetadata[key];
+  const canonicalPath = key === '/404' ? '/404' : path;
+  document.title = metadata.title;
+  document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute('href', `${siteUrl}${canonicalPath === '/' ? '/' : canonicalPath}`);
+  setMeta('meta[name="description"]', metadata.description);
+  setMeta('meta[property="og:title"]', metadata.title);
+  setMeta('meta[property="og:description"]', metadata.description);
+  setMeta('meta[property="og:url"]', `${siteUrl}${canonicalPath === '/' ? '/' : canonicalPath}`);
+  setMeta('meta[name="twitter:title"]', metadata.title);
+  setMeta('meta[name="twitter:description"]', metadata.description);
+}
+
 function header() {
   return `<a class="skip-link" href="#main">Skip to main content</a>
     ${demoMode ? `<div class="demo-banner" role="status"><span>Demo — sample data, nothing is saved</span><button class="small" id="reset-demo">Reset demo</button><a class="button small" href="/" data-start-real>Start for real</a></div>` : ''}
@@ -210,7 +240,7 @@ function header() {
 function footer() {
   return `<footer class="site-footer"><div class="footer-inner">
     <div class="footer-copy"><strong>Storage-Aware Expiry</strong><p>Plan pantry, fridge, and freezer dates. Dates are reminders, not food-safety advice.</p><p>Original generated artwork is disclosed in the design notes.</p></div>
-    <div class="footer-links"><a href="/privacy${demoMode ? '?demo=1' : ''}" data-link>Privacy</a><a href="/terms${demoMode ? '?demo=1' : ''}" data-link>Terms</a><a href="https://hello.sociobot.in" rel="external">Built by Param Factory</a><span class="build-id">v1.0.0</span></div>
+    <div class="footer-links"><a href="/privacy${demoMode ? '?demo=1' : ''}" data-link>Privacy</a><a href="/terms${demoMode ? '?demo=1' : ''}" data-link>Terms</a><a href="https://hello.sociobot.in" rel="external">Built by Param Factory (external site)</a><span class="build-id">v1.0.1</span></div>
   </div></footer>`;
 }
 
@@ -236,7 +266,7 @@ function itemForm() {
     <div class="field"><label for="quantity">Quantity <span class="optional">(optional)</span></label><input id="quantity" name="quantity" maxlength="40" value="${escapeHtml(item?.quantity ?? '')}"></div>
     <div class="field"><label for="location">Storage place</label><select id="location" name="location"><option value="pantry" ${locationValue === 'pantry' ? 'selected' : ''}>Pantry</option><option value="fridge" ${locationValue === 'fridge' ? 'selected' : ''}>Fridge</option><option value="freezer" ${locationValue === 'freezer' ? 'selected' : ''}>Freezer</option></select></div>
     <div class="field"><label for="stored-on">${locationValue === 'freezer' ? 'Frozen on' : 'Stored on'}</label><input id="stored-on" name="storedOn" type="date" required value="${stored}"></div>
-    <div class="field"><label for="planned-date">Use by</label><input id="planned-date" name="plannedDate" type="date" required value="${item?.plannedDate ?? planned}"></div>
+    <div class="field"><label for="planned-date">Planned date</label><input id="planned-date" name="plannedDate" type="date" required value="${item?.plannedDate ?? planned}"></div>
     <div class="field wide"><label for="note">Note <span class="optional">(optional)</span></label><input id="note" name="note" maxlength="100" value="${escapeHtml(item?.note ?? '')}" placeholder="Container, meal, or reminder"></div>
     <p class="date-preview" id="date-preview">The ${locationValue} preset suggests ${formatDate(planned)}. You can change this date.</p>
     <p class="form-error" id="form-error" aria-live="assertive" hidden></p>
@@ -244,20 +274,21 @@ function itemForm() {
   </form>`;
 }
 
-function queueHtml() {
+function queueHtml(limit?: number) {
   const active = items.filter(item => !item.consumedAt).sort((a, b) => a.plannedDate.localeCompare(b.plannedDate));
   const visible = active.filter(item => filter === 'all' || item.location === filter);
-  const list = visible.map(item => {
+  const shown = limit ? visible.slice(0, limit) : visible;
+  const list = shown.map(item => {
     const due = dueText(item);
     const storedLabel = item.location === 'freezer' ? 'Frozen' : 'Stored';
     return `<li class="item-ticket" data-location="${item.location}" data-item-id="${item.id}"><span class="location-band" aria-hidden="true"></span>
       <div class="ticket-main"><div class="ticket-top"><h3>${escapeHtml(item.name)}</h3><span class="location-word">${item.location}</span></div>
-      <p class="ticket-meta"><span>${escapeHtml(item.quantity || 'Quantity not set')}</span><span>${storedLabel} ${formatDate(item.frozenOn || item.storedOn)}</span><span>Use by ${formatDate(item.plannedDate)}</span>${item.note ? `<span>${escapeHtml(item.note)}</span>` : ''}</p></div>
-      <div class="ticket-actions"><span class="due-reading ${due.overdue ? 'overdue' : ''}">${due.label}</span><div class="action-row"><button class="small use-item" data-id="${item.id}">Mark used</button><button class="small ghost edit-item" data-id="${item.id}">Edit</button><a class="button small ghost" href="/print/${item.id}${demoMode ? '?demo=1' : ''}" data-link>Print</a></div></div>
+      <p class="ticket-meta"><span>${escapeHtml(item.quantity || 'Quantity not set')}</span><span>${storedLabel} ${formatDate(item.frozenOn || item.storedOn)}</span><span>Planned for ${formatDate(item.plannedDate)}</span>${item.note ? `<span>${escapeHtml(item.note)}</span>` : ''}</p></div>
+      <div class="ticket-actions"><span class="due-reading ${due.overdue ? 'overdue' : ''}">${due.label}</span><div class="action-row"><button class="small use-item" data-id="${item.id}" aria-label="Mark ${escapeHtml(item.name)} used">Mark used</button><button class="small ghost edit-item" data-id="${item.id}" aria-label="Edit ${escapeHtml(item.name)}">Edit item</button><a class="button small ghost" href="/print/${item.id}${demoMode ? '?demo=1' : ''}" data-link aria-label="Print label for ${escapeHtml(item.name)}">Print label</a></div></div>
     </li>`;
   }).join('');
-  return `<div class="queue-toolbar"><div class="filter-group" aria-label="Filter by storage place">${(['all', 'pantry', 'fridge', 'freezer'] as Filter[]).map(value => `<button class="small filter-button" data-filter="${value}" aria-pressed="${filter === value}">${value[0].toUpperCase() + value.slice(1)}</button>`).join('')}</div><span>${visible.length} shown</span></div>
-    ${visible.length ? `<ol class="item-list">${list}</ol>` : `<div class="empty-state"><div class="empty-dial" aria-hidden="true"></div><h3>${active.length ? `No ${filter} items` : 'Your use-first list is empty'}</h3><p>${active.length ? 'Choose another storage place or add an item here.' : 'Add one stored item. Its planned date will appear here in use-first order.'}</p><button class="primary" id="focus-add">Add your first item</button></div>`}`;
+  return `${limit ? '' : `<div class="queue-toolbar"><div class="filter-group" aria-label="Filter by storage place">${(['all', 'pantry', 'fridge', 'freezer'] as Filter[]).map(value => `<button class="small filter-button" data-filter="${value}" aria-pressed="${filter === value}">${value[0].toUpperCase() + value.slice(1)}</button>`).join('')}</div><span>${visible.length} shown</span></div>`}
+    ${shown.length ? `<ol class="item-list">${list}</ol>` : `<div class="empty-state"><div class="empty-dial" aria-hidden="true"></div><h3>${active.length ? `No ${filter} items` : 'Your use-first list is empty'}</h3><p>${active.length ? 'Choose another storage place or add an item here.' : 'Add one stored item. Its planned date will appear here in use-first order.'}</p><button class="primary" id="focus-add">Add your first item</button></div>`}`;
 }
 
 function appPanel() {
@@ -268,12 +299,18 @@ function appPanel() {
     <section class="rail-card"><h2>Household record</h2><p><strong>${used}</strong> item${used === 1 ? '' : 's'} marked used on this device.</p><p>Plan dates for quality and rotation. Check official guidance when safety is uncertain.</p></section></aside></div>`;
 }
 
+function demoPanel() {
+  const active = items.filter(item => !item.consumedAt);
+  return `<div class="panel-grid demo-panel"><section class="control-panel" aria-labelledby="demo-queue-title"><div class="panel-header"><h2 id="demo-queue-title">Use-first preview</h2><span class="count-readout">${String(active.length).padStart(2, '0')} ACTIVE</span></div><div class="demo-preview">${queueHtml()}</div><div class="demo-full-list"><h2>Add another item</h2>${itemForm()}</div></section>
+    <aside class="side-rail" aria-label="Inventory guidance"><section class="rail-card"><h2>Date presets</h2><p>New dates start from these settings. Every date stays editable.</p><div class="storage-scale"><div class="scale-row"><span>Pantry</span><i class="scale-line"></i><span>${presets.pantry}d</span></div><div class="scale-row"><span>Fridge</span><i class="scale-line"></i><span>${presets.fridge}d</span></div><div class="scale-row"><span>Freezer</span><i class="scale-line"></i><span>${presets.freezer}d</span></div></div><p><a href="/settings?demo=1" data-link>Change date presets</a></p></section></aside></div>`;
+}
+
 function homePage() {
-  if (demoMode) return `<main id="main"><section class="app-section shell"><div class="section-heading"><p class="eyebrow">Sample household · five items</p><h1>Use what needs attention first</h1><p>Try the full list. Your changes stay inside this temporary demo.</p></div>${appPanel()}</section></main>`;
+  if (demoMode) return `<main id="main"><section class="app-section shell demo-app"><div class="section-heading"><p class="eyebrow">Sample household · five items</p><h1>Use what needs attention first</h1><p>See planned dates and actions before adding anything. Your changes stay inside this temporary demo.</p></div>${demoPanel()}</section></main>`;
   return `<main id="main"><section class="hero shell"><div><p class="eyebrow">A small household date planner</p><h1>Use stored food before you forget it</h1><p class="lede">For households that freeze and store food without tracking every grocery purchase.</p><div class="hero-actions"><a class="button primary" href="/demo" data-link>Try it with sample data</a><span class="next-step">See five items in use-first order. No setup.</span><a class="button" href="#inventory">Add your first item</a></div><ul class="plain-facts"><li>Data stays on this device</li><li>Works offline after one visit</li><li>Free for 20 active items</li></ul></div>
     <figure class="hero-visual"><picture><source srcset="/assets/storage-panel-640.webp 640w, /assets/storage-panel-960.webp 960w" sizes="(max-width: 800px) 100vw, 46vw" type="image/webp"><img src="/assets/storage-panel-960.webp" width="960" height="640" alt="A pantry jar, fridge tin, and freezer box sit above three brass date dials." fetchpriority="high" decoding="async"></picture></figure></section>
     <section class="app-section shell" id="inventory"><div class="section-heading"><p class="eyebrow">Your local inventory</p><h2>Add only what is easy to forget</h2><p>Choose where it lives. The date preset changes with the storage place.</p></div>${appPanel()}</section>
-    <section class="steps"><div class="shell"><div class="section-heading"><h2>How it works</h2></div><div class="steps-grid"><article class="step"><h3>Add a stored item</h3><p>Name the item and choose pantry, fridge, or freezer. Quantity is optional.</p></article><article class="step"><h3>Review the planned date</h3><p>The storage preset suggests a date. Change it whenever your own guidance differs.</p></article><article class="step"><h3>Use from the top</h3><p>The earliest planned date stays first. Mark the item used when it leaves storage.</p></article></div></div></section>
+    <section class="steps"><div class="shell"><div class="section-heading"><h2>How it works</h2></div><div class="steps-grid"><article class="step"><h3>Add a stored item</h3><p>Name the item and choose pantry, fridge, or freezer. Quantity is optional.</p></article><article class="step"><h3>Review the planned date</h3><p>The storage preset suggests a date. Change it whenever your own guidance differs.</p></article><article class="step"><h3>Use the earliest planned item first</h3><p>The earliest planned date stays first. Mark the item used when it leaves storage.</p></article></div></div></section>
     <section class="limits"><div class="shell"><div class="section-heading"><h2>What this tool handles</h2></div><div class="limits-grid"><div><h3>Included tools</h3><ul><li>Optional quantities and notes</li><li>Storage-specific date presets</li><li>JSON and CSV export</li><li>Browser-printed freezer labels</li></ul></div><div class="safety-note"><h3>What it does not decide</h3><p>This tool does not say whether food is safe. It does not scan barcodes, track nutrition, or follow every purchase.</p></div></div></div></section>
     ${pricingSection()}</main>`;
 }
@@ -286,32 +323,31 @@ function settingsPage() {
   return `<main id="main" class="settings-page"><p class="eyebrow">Local controls</p><h1>Set your storage date defaults</h1><p class="lede">These dates are planning reminders. Choose values that match your household guidance.</p>
     <form class="settings-box" id="preset-form"><h2>Date presets</h2><div class="preset-grid"><div class="field"><label for="preset-pantry">Pantry days</label><input type="number" id="preset-pantry" name="pantry" min="1" max="3650" value="${presets.pantry}" required></div><div class="field"><label for="preset-fridge">Fridge days</label><input type="number" id="preset-fridge" name="fridge" min="1" max="3650" value="${presets.fridge}" required></div><div class="field"><label for="preset-freezer">Freezer days</label><input type="number" id="preset-freezer" name="freezer" min="1" max="3650" value="${presets.freezer}" required></div></div><p id="preset-error" class="form-error" aria-live="assertive" hidden></p><div class="form-actions"><button class="primary" type="submit">Save date presets</button><button type="button" id="reset-presets">Restore default presets</button></div></form>
     <section class="settings-box"><h2>Own your data</h2><p>Export a backup or move your items to another browser. Imports replace items with matching IDs.</p><div class="data-actions"><button id="export-json">Export JSON backup</button><button id="export-csv">Export list as CSV</button><label class="button" for="import-json">Import JSON backup</label><input id="import-json" type="file" accept="application/json,.json" hidden></div><p id="import-status" aria-live="polite"></p></section>
-    <section class="settings-box"><h2>Household license</h2><p>${paid ? 'Your existing household license is active on this browser.' : 'The free plan holds 20 active items. Household license checkout is currently unavailable.'}</p>${paid ? `<div class="data-actions"><a class="button primary" href="/print-all${demoMode ? '?demo=1' : ''}" data-link>Print all active labels</a><button id="remove-license" class="danger">Remove license from this browser</button></div>` : ''}</section>
+    <section class="settings-box"><h2>Household license</h2><p>${paid ? 'Your existing household license is active on this browser.' : 'The free plan holds 20 active items. Household license checkout is currently unavailable.'}</p><form class="license-form" id="license-form"><label class="sr-only" for="license-token">Existing license token</label><input id="license-token" name="license" autocomplete="off" placeholder="Paste an existing license token"><button type="submit">Check existing license</button></form><p id="license-status" aria-live="polite"></p>${paid ? `<div class="data-actions"><a class="button primary" href="/print-all${demoMode ? '?demo=1' : ''}" data-link>Print all active labels</a><button id="remove-license" class="danger">Remove license from this browser</button></div>` : ''}</section>
   </main>`;
 }
 
 function legalPage(kind: 'privacy' | 'terms') {
-  if (kind === 'privacy') return `<main id="main" class="legal-page"><p class="eyebrow">Last updated 2 September 2026</p><h1>Your inventory stays in this browser</h1><div class="prose"><h2>What is stored</h2><p>Items, dates, notes, presets, and completion history are stored in IndexedDB on this device. Demo changes use a separate temporary browser key.</p><h2>What leaves the device</h2><p>The inventory app sends no item data to us. Checking an existing license contacts the Sociobot billing API. The request contains the license token, not your inventory.</p><h2>Your choices</h2><p>Use Settings to export your data. Clear this site's browser data to erase local records. Starting for real does not copy demo items.</p><h2>Contact</h2><p>Email <a href="mailto:privacy@sociobot.in">privacy@sociobot.in</a> with privacy questions.</p></div></main>`;
+  if (kind === 'privacy') return `<main id="main" class="legal-page"><p class="eyebrow">Last updated 2 September 2026</p><h1>Your inventory stays in this browser</h1><div class="prose"><h2>What is stored</h2><p>Items, dates, notes, presets, and completion history stay in this browser. Demo changes use a separate temporary browser key.</p><h2>What leaves the device</h2><p>The inventory app sends no item data to us. Checking an existing license contacts Sociobot. The request contains the license token, not your inventory.</p><h2>Your choices</h2><p>Use Settings to export your data. Clear this site's browser data to erase local records. Starting for real does not copy demo items.</p><h2>Contact</h2><p>Email <a href="mailto:privacy@sociobot.in">privacy@sociobot.in</a> with privacy questions.</p></div></main>`;
   return `<main id="main" class="legal-page"><p class="eyebrow">Last updated 2 September 2026</p><h1>Terms for using this date planner</h1><div class="prose"><h2>Planning dates</h2><p>Dates are personal planning reminders. They are not food-safety advice or a finding that food is safe to eat.</p><h2>Free use</h2><p>The free plan supports 20 active items, date presets, exports, and single-label printing.</p><h2>Household licenses</h2><p>Household license checkout is currently unavailable. Existing licenses may continue to unlock their saved features.</p><h2>Your data</h2><p>You are responsible for backups and your device. Export tools are available in Settings.</p><h2>Liability</h2><p>The software is provided as-is under the MIT License. Use official food-safety advice when you are uncertain.</p></div></main>`;
 }
 
 function printPage(id: string) {
   const item = items.find(entry => entry.id === id && !entry.consumedAt);
   if (!item) return `<main id="main" class="print-page"><h1>This item was not found</h1><p>It may have been marked used or removed.</p><a class="button" href="${demoMode ? '/demo' : '/'}" data-link>Return to the use-first list</a></main>`;
-  return `<main id="main" class="print-page"><h1>Print a label for ${escapeHtml(item.name)}</h1><p>Use your browser print dialog. Choose the label size your printer supports.</p><div class="print-controls"><button class="primary" id="print-label">Print this label</button><a class="button" href="${demoMode ? '/demo' : '/'}" data-link>Return to the list</a></div><section class="print-label" aria-label="Printable freezer label"><span class="label-location">${item.location}</span><h2>${escapeHtml(item.name)}</h2><div class="label-date"><span>${item.location === 'freezer' ? 'Frozen' : 'Stored'} ${formatDate(item.frozenOn || item.storedOn)}</span><span>Use by ${formatDate(item.plannedDate)}</span></div></section></main>`;
+  return `<main id="main" class="print-page"><h1>Print a label for ${escapeHtml(item.name)}</h1><p>Use your browser print dialog. Choose the label size your printer supports.</p><div class="print-controls"><button class="primary" id="print-label">Print this label</button><a class="button" href="${demoMode ? '/demo' : '/'}" data-link>Return to the list</a></div><section class="print-label" aria-label="Printable freezer label"><span class="label-location">${item.location}</span><h2>${escapeHtml(item.name)}</h2><div class="label-date"><span>${item.location === 'freezer' ? 'Frozen' : 'Stored'} ${formatDate(item.frozenOn || item.storedOn)}</span><span>Planned for ${formatDate(item.plannedDate)}</span></div></section></main>`;
 }
 
 function printAllPage() {
   if (!paid) return `<main id="main" class="print-page"><h1>An existing household license is needed</h1><p>Batch printing is for existing household licenses. Checkout is currently unavailable.</p><a class="button" href="/settings" data-link>Return to settings</a></main>`;
   const active = items.filter(item => !item.consumedAt).sort((a, b) => a.plannedDate.localeCompare(b.plannedDate));
-  return `<main id="main" class="print-page"><h1>Print all active labels</h1><p>${active.length} label${active.length === 1 ? '' : 's'} will print in use-first order.</p><div class="print-controls"><button class="primary" id="print-label">Print all labels</button><a class="button" href="/settings" data-link>Return to settings</a></div>${active.map(item => `<section class="print-label" aria-label="Printable label for ${escapeHtml(item.name)}"><span class="label-location">${item.location}</span><h2>${escapeHtml(item.name)}</h2><div class="label-date"><span>${item.location === 'freezer' ? 'Frozen' : 'Stored'} ${formatDate(item.frozenOn || item.storedOn)}</span><span>Use by ${formatDate(item.plannedDate)}</span></div></section>`).join('')}</main>`;
+  return `<main id="main" class="print-page"><h1>Print all active labels</h1><p>${active.length} label${active.length === 1 ? '' : 's'} will print in use-first order.</p><div class="print-controls"><button class="primary" id="print-label">Print all labels</button><a class="button" href="/settings" data-link>Return to settings</a></div>${active.map(item => `<section class="print-label" aria-label="Printable label for ${escapeHtml(item.name)}"><span class="label-location">${item.location}</span><h2>${escapeHtml(item.name)}</h2><div class="label-date"><span>${item.location === 'freezer' ? 'Frozen' : 'Stored'} ${formatDate(item.frozenOn || item.storedOn)}</span><span>Planned for ${formatDate(item.plannedDate)}</span></div></section>`).join('')}</main>`;
 }
 
 function render() {
   const path = location.pathname;
   demoMode = path === '/demo' || new URLSearchParams(location.search).get('demo') === '1';
-  document.title = path.startsWith('/print/') || path === '/print-all' ? 'Print labels — Storage-Aware Expiry' : (pageTitles[path] ?? 'Page not found — Storage-Aware Expiry');
-  document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute('href', `https://storage-aware-expiry.sociobot.in${path === '/' ? '/' : path}`);
+  setRouteMetadata(path);
   let content: string;
   if (path === '/' || path === '/demo') content = homePage();
   else if (path === '/settings') content = settingsPage();
@@ -319,7 +355,7 @@ function render() {
   else if (path === '/terms') content = legalPage('terms');
   else if (path === '/print-all') content = printAllPage();
   else if (path.startsWith('/print/')) content = printPage(decodeURIComponent(path.slice(7)));
-  else content = `<main id="main" class="legal-page"><h1>This shelf is empty</h1><p>The page was not found. Your stored items are unchanged.</p><a class="button" href="/" data-link>Return to the use-first list</a></main>`;
+  else content = `<main id="main" class="legal-page"><h1>Page not found</h1><p>The page was not found. Your stored items are unchanged.</p><a class="button" href="/" data-link>Return to the use-first list</a></main>`;
   app.innerHTML = `${header()}<div id="connection-status" aria-live="polite"></div>${content}${footer()}<div id="route-status" class="sr-only" aria-live="polite"></div><dialog id="confirm-dialog"><div class="dialog-inner"><h2>Remove this item?</h2><p id="dialog-copy"></p><div class="dialog-actions"><button id="cancel-remove">Keep item</button><button id="confirm-remove" class="danger">Remove item</button></div></div></dialog>`;
   bindEvents();
   updateConnectionStatus();
@@ -456,10 +492,21 @@ function bindEvents() {
   document.querySelector('#export-json')?.addEventListener('click', () => download('storage-aware-expiry-backup.json', JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), presets, items }, null, 2), 'application/json'));
   document.querySelector('#export-csv')?.addEventListener('click', () => {
     const quote = (value: string) => `"${value.replace(/"/g, '""')}"`;
-    const rows = [['name', 'quantity', 'location', 'stored_on', 'frozen_on', 'use_by', 'note', 'used_on'], ...items.map(item => [item.name, item.quantity, item.location, item.storedOn, item.frozenOn ?? '', item.plannedDate, item.note, item.consumedAt ?? ''])];
+    const rows = [['name', 'quantity', 'location', 'stored_on', 'frozen_on', 'planned_date', 'note', 'used_on'], ...items.map(item => [item.name, item.quantity, item.location, item.storedOn, item.frozenOn ?? '', item.plannedDate, item.note, item.consumedAt ?? ''])];
     download('storage-aware-expiry.csv', rows.map(row => row.map(quote).join(',')).join('\n'), 'text/csv');
   });
   document.querySelector<HTMLInputElement>('#import-json')?.addEventListener('change', importBackup);
+  document.querySelector<HTMLFormElement>('#license-form')?.addEventListener('submit', async event => {
+    event.preventDefault();
+    const token = String(new FormData(event.currentTarget as HTMLFormElement).get('license') ?? '').trim();
+    const status = document.querySelector<HTMLElement>('#license-status')!;
+    if (!token) { status.textContent = 'Paste an existing license token to check it.'; return; }
+    localStorage.setItem(LICENSE_KEY, token);
+    localStorage.removeItem(LICENSE_CACHE_KEY);
+    status.textContent = 'Checking your existing license…';
+    await verifyLicense(true);
+    status.textContent = paid ? 'This existing license is active.' : 'This license is not active. The free plan still works.';
+  });
   document.querySelector('#remove-license')?.addEventListener('click', () => { localStorage.removeItem(LICENSE_KEY); localStorage.removeItem(LICENSE_CACHE_KEY); paid = false; render(); showToast('The license was removed from this browser.'); });
 }
 

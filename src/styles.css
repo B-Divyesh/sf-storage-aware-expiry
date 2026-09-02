@@ -90,6 +90,13 @@ h3 { margin: 0 0 8px; font-size: 23px; }
 .section-heading p { margin: 0; color: var(--muted); font-size: 18px; }
 .offline-notice, .status-notice { margin: 0; padding: 10px 16px; border-bottom: 2px solid var(--ink); background: var(--fridge); color: #fff; text-align: center; font-weight: 700; }
 .panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 24px; align-items: start; }
+.demo-app { padding-top: 28px; }
+.demo-app .section-heading { margin-bottom: 18px; }
+.demo-preview .item-ticket { min-height: 96px; }
+.demo-preview .ticket-main { padding-block: 12px; }
+.demo-preview .ticket-actions { padding-block: 10px; }
+.demo-full-list { border-top: 3px solid var(--ink); }
+.demo-full-list > h2 { margin: 0; padding: 16px 20px; border-bottom: 2px solid var(--ink); font-size: 24px; }
 .control-panel { border: 3px solid var(--ink); background: var(--panel); box-shadow: 8px 8px 0 var(--shadow); }
 .panel-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 20px; border-bottom: 2px solid var(--ink); background: color-mix(in srgb, var(--brass) 15%, var(--panel)); }
 .panel-header h2 { margin: 0; font-size: 28px; }
@@ -203,6 +210,7 @@ dialog::backdrop { background: rgba(20, 25, 25, .65); }
   .item-ticket { grid-template-columns: 7px 1fr; }
   .ticket-actions { grid-column: 2; border-left: 0; border-top: 1px dashed var(--line); flex-direction: row; flex-wrap: wrap; justify-content: flex-start; }
   .due-reading { width: 100%; text-align: left; }
+  .demo-preview .ticket-actions { flex-direction: row; }
   .side-rail { grid-template-columns: 1fr; }
   .preset-grid { grid-template-columns: 1fr; }
   .license-form { flex-direction: column; }

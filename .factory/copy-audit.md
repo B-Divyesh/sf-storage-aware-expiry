@@ -37,6 +37,8 @@ Audited 2 September 2026. Counts treat hyphenated terms as one word. No line exc
 | Plan pantry, fridge, and freezer dates. | 6 | Pass |
 | Dates are reminders, not food-safety advice. | 6 | Pass |
 | Original generated artwork is disclosed in the design notes. | 8 | Pass |
+| See planned dates and actions before adding anything. | 8 | Pass |
+| Your changes stay inside this temporary demo. | 7 | Pass |
 
 ## Terminology table
 
@@ -45,7 +47,7 @@ Audited 2 September 2026. Counts treat hyphenated terms as one word. No line exc
 | A saved food record | item |
 | Ordering by soonest date | use-first list |
 | Where an item is kept | storage place |
-| User-selected reminder date | planned date / “Use by” field label |
+| User-selected reminder date | planned date |
 | Default duration by place | date preset |
 | Finished item state | used |
 | Temporary sample environment | demo |

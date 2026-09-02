@@ -89,5 +89,33 @@
     "where": "landing capabilities, Settings, README",
     "test": "npm test -- --grep @claim:preset-settings",
     "sandbox": "fresh browser context at /settings?demo=1; set freezer to 120 days and verify the next suggested date"
+  },
+  {
+    "id": "real-persistence",
+    "claim": "Saved items stay in this browser after a reload.",
+    "where": "README and Privacy",
+    "test": "npm test -- --grep @claim:real-persistence",
+    "sandbox": "dedicated fresh browser context at /; add a real item, reload, and open a second page in the same context"
+  },
+  {
+    "id": "license-verification",
+    "claim": "Existing license holders can check a license in Settings.",
+    "where": "README and Settings",
+    "test": "npm test -- --grep @claim:license-verification",
+    "sandbox": "fresh browser context; intercept the Sociobot verification endpoint with valid and invalid fixtures, then assert the request and resulting UI"
+  },
+  {
+    "id": "editable-optional-fields",
+    "claim": "Planned dates stay editable, and quantity, freezer date, and notes can be recorded.",
+    "where": "landing app and README",
+    "test": "npm test -- --grep @claim:editable-optional-fields",
+    "sandbox": "fresh browser context at /demo; save a manual date with blank optional fields, reload, edit, and assert stored values"
+  },
+  {
+    "id": "limited-scope",
+    "claim": "The planner does not scan barcodes, track nutrition, or follow every purchase.",
+    "where": "landing scope section",
+    "test": "npm test -- --grep @claim:limited-scope",
+    "sandbox": "fresh browser context at /; assert the visible scope statement"
   }
 ]
