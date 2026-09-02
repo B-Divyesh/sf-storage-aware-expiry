@@ -31,4 +31,8 @@ Completed 2 September 2026 for `storage-aware-expiry-polish-2`.
 
 ## Live evidence
 
-Deployment and cold live verification are recorded in the final handoff entry.
+- Repair commit `00c4a690d3797a816886a44668b044c25fc26c1e` deployed to scoped Static Web App `sf-storage-aware-expiry` on 2 September 2026. The deployment reached `https://storage-aware-expiry.sociobot.in` over HTTPS.
+- Cold `verify-url.sh` passed at `https://storage-aware-expiry.sociobot.in/demo`; evidence is in `/tmp/storage-aware-expiry-live-verify-round2/`, including desktop and mobile screenshots.
+- A separate cold 390 px Chromium context seeded both real license keys, then opened `/demo`, `/settings?demo=1`, and `/demo?license=demo-write-token`. Each retained the two exact seeded values, showed no paid status or license input, and logged no console errors. Screenshot: `/tmp/storage-aware-expiry-round2-live-demo-390.png`.
+- Live 390 px Axe checks passed with zero serious/critical violations for `/`, `/demo`, `/settings`, `/privacy`, `/terms`, `/print/sample-soup?demo=1`, and `/not-a-real-page`. Each had the intended title, one matching `h1`, one `main`, matching canonical and Open Graph URLs, and no horizontal overflow.
+- `https://storage-aware-expiry.sociobot.in/not-a-real-page` returned HTTP 404. The current fingerprinted JS is `index-B-Wd28mZ.js`, matching the deployed repair build.

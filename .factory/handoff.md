@@ -228,4 +228,11 @@ Completed 2 September 2026 for `storage-aware-expiry-polish-2`.
 
 No known product defects remain. Household license checkout remains intentionally unavailable and is accurately disclosed. Dates remain planning reminders, not food-safety advice; labels use the browser print dialog.
 
-See [.factory/polish-2.md](polish-2.md) for the finding-by-finding mapping. Deployment commit and cold live evidence are added after deployment.
+See [.factory/polish-2.md](polish-2.md) for the finding-by-finding mapping.
+
+## Deployment and live verification
+
+- Repair commit `00c4a690d3797a816886a44668b044c25fc26c1e` deployed to `sf-storage-aware-expiry` on 2 September 2026. The scoped deployment completed and `https://storage-aware-expiry.sociobot.in` returned HTTPS 200.
+- Cold live URL verification passed at `https://storage-aware-expiry.sociobot.in/demo`; evidence directory: `/tmp/storage-aware-expiry-live-verify-round2/`. It found zero console errors and confirmed title, `lang=en`, one `h1`, one `main`, image alt text, and labelled controls.
+- A fresh 390 px live Chromium context seeded the real license and cached-verdict keys, then opened `/demo`, `/settings?demo=1`, and `/demo?license=demo-write-token`. The keys remained byte-for-byte unchanged, no paid UI or license input appeared, and no console errors occurred. Screenshot: `/tmp/storage-aware-expiry-round2-live-demo-390.png`.
+- Live Axe checks found zero serious/critical violations for `/`, `/demo`, `/settings`, `/privacy`, `/terms`, `/print/sample-soup?demo=1`, and `/not-a-real-page`; every route had its intended title, one `h1`, one `main`, matching canonical and Open Graph URLs, and no 390 px overflow. The unknown route returned HTTP 404.
