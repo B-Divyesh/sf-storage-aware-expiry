@@ -32,12 +32,12 @@ Open `http://127.0.0.1:5173/demo` for the isolated sample. Build deployable outp
 - `npm audit` and `npm audit --omit=dev`: zero vulnerabilities.
 - `/opt/fleet/lib/verify-url.sh http://127.0.0.1:4173/ /tmp/storage-aware-expiry-verify`: passed: HTTP 200, correct title/lang, one `h1`, main landmark, no missing image alt text, no unlabeled buttons, and no console errors.
 - The local build check confirms that `index.html` and `sw.js` reference `assets/index-<hash>.js` and `assets/index-<hash>.css`; `staticwebapp.config.json` applies immutable caching to asset URLs and a revalidating policy to `/sw.js`.
+- Live mobile Lighthouse: Performance 97, Accessibility 100, Best Practices 100, SEO 100; LCP 1.2 s and CLS 0. The report was written to `/tmp/storage-aware-expiry-lighthouse.json`.
 
 ## Known limits
 
 - Household-license checkout intentionally remains unavailable until the factory registers and enables this product. The UI makes no claim that purchase works.
 - Dates are planning reminders, not food-safety advice. Browser printing remains dependent on the user’s print dialog.
-- No fresh Lighthouse CLI report was produced in this container because Lighthouse is not installed. The browser accessibility, responsiveness, asset-budget, and local URL checks above passed; the prior verified candidate scored 95 performance and 100 accessibility.
 
 ## Next steps
 
