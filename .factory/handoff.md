@@ -1,4 +1,47 @@
-# Storage-Aware Expiry review 1 handoff
+# Storage-Aware Expiry polish 1 handoff
+
+Completed 2 September 2026 for work order `storage-aware-expiry-polish-1`.
+
+## Delivered
+
+- Repaired every finding in `review-1.md`; the detailed finding-to-evidence map is in [polish-1.md](polish-1.md).
+- Demo starts at `/demo` and `?demo=1`, stays in its own browser-storage namespace, has a persistent reset/start-real banner, and now leads with the sample use-first tickets.
+- Standardized all customer language on **planned date**. Item action labels are explicit and item-specific for assistive technology.
+- Added route-specific SEO/social metadata and complete branded 404 markup. Static Web Apps retains the 404 response override.
+- Added four missing claims: real persistence, existing-license verification, editable/optional fields, and limited scope. JSON-export testing now validates downloaded bytes before importing them.
+
+## How to run and verify
+
+```sh
+npm ci
+npm test
+npm run build
+```
+
+Open `http://127.0.0.1:5173/demo` for the isolated sample. The production build is `dist/` with `index.html` at its root.
+
+## Exact evidence
+
+- Repair commit: `b2f08ee6b5913e6ac692b3687ced731daee54e0e`.
+- Clean clone `/tmp/storage-aware-expiry-clean`: `npm ci` passed; all 17 `claims.json` commands passed independently.
+- Main suite: `npm test` passed **24/24** Chromium tests.
+- `npm run lint` passed. `npm run build` passed and created `dist/`; JS is 33.26 KB raw / 10.55 KB gzip, CSS is 14.79 KB raw / 4.19 KB gzip.
+- Local `verify-url.sh` passed at `/tmp/storage-aware-expiry-verify`; its result reports HTTP 200, title, lang, one h1, main, no missing alt text, no unlabeled buttons, and no console errors.
+- Local demo screenshots: `/tmp/storage-aware-expiry-demo-390.png` and `/tmp/storage-aware-expiry-demo-1440.png`.
+- Playwright Axe checks on home, demo, settings, privacy, and terms plus the 390 px dark/reduced-motion demo found no serious or critical findings.
+
+## Known limits
+
+- Household-license checkout remains intentionally unavailable. Existing license holders can check a token in Settings.
+- Dates remain planning reminders, not food-safety advice. Label printing uses the browser’s print dialog.
+
+## Deployment and live evidence
+
+Pending the scoped Static Web App deployment and cold live recheck in this work order.
+
+---
+
+# Earlier review handoff
 
 Completed 2 September 2026 for work order `storage-aware-expiry-review-1`.
 
