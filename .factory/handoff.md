@@ -51,3 +51,28 @@ Open `http://127.0.0.1:5173/demo` for the isolated sample. Build deployable outp
 ## Future work
 
 If a household license is later registered, reintroduce checkout only after an end-to-end hosted checkout and return-license test passes.
+
+## Independent verification 2 — PASS
+
+Verified 2 September 2026 for `storage-aware-expiry-verify-2`.
+
+- Candidate: `c46398ba2580bca21a910332618b259785873517`
+- Live URL: <https://storage-aware-expiry.sociobot.in>
+- Verdict: **PASS — accepted for release**
+
+### Evidence
+
+- Clean install, all 13 required claims, full 18-test Chromium suite, type check, and production build passed.
+- Cold first-read and the one-click isolated demo passed. Reset demo and Start for real keep sample and real data separate.
+- Independent live flows passed: add, edit, mark used, undo, reload persistence, invalid name/preset/import recovery, and delete-cancel recovery.
+- Live desktop and 390 px mobile checks passed: keyboard skip link, reduced motion, no console/page errors, no horizontal overflow, 44 px interactive targets, and zero serious/critical Axe findings.
+- The live PWA worker controls the page, update check completed, and the demo reloaded offline with sample data. Fingerprinted assets are immutable; HTML and service worker revalidate.
+- Privacy recording saw only same-origin requests. Live headers include CSP, HSTS, nosniff, referrer policy, and permissions policy.
+- Fresh-build HTML, JS, CSS, and service worker exactly match the live deployment by SHA-256.
+- Existing-license verification permits 30 requests from one client and returns HTTP 429 with `Retry-After: 3` at request 31.
+
+### Defects and known limits
+
+No defects were found in this candidate. Household-license checkout remains intentionally unavailable and accurately disclosed; no purchase action is shown. Dates are planning reminders, not food-safety advice, and browser label printing depends on the browser print dialog.
+
+Full evidence: [.factory/verification-2.md](verification-2.md).
