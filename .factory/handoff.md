@@ -1,4 +1,34 @@
-# Storage-Aware Expiry repair handoff
+# Storage-Aware Expiry review 1 handoff
+
+Completed 2 September 2026 for work order `storage-aware-expiry-review-1`.
+
+## Review result
+
+- Verdict: **FAIL** with 14 findings in [review-1.md](review-1.md).
+- Blocking issue: `/demo` loads five realistic samples, but every item ticket is below the initial 390 × 844 and 1440 × 900 viewports. The first screen shows an empty entry form instead of the product in use.
+- Other material issues: inconsistent “Use by”/“planned date” terminology, incomplete JSON-export coverage, unlisted persistence/license/field claims, soft-404 behavior, stale route sharing metadata, and plain-language defects.
+- No product code, deployment, infrastructure, DNS, billing resource, or external product resource was modified.
+
+## Verification performed
+
+- Opened the live site cold in fresh Chromium contexts at 390 × 844 and 1440 × 900.
+- Exercised the live demo with a pre-existing real-data sentinel. Demo reset restored five samples; Start for real preserved the sentinel and copied no sample data.
+- Confirmed the live demo reloads offline and all recorded demo requests are same-origin.
+- Ran all 13 claim commands separately from a clean clone at `fe57bc1`; every command exited successfully. The `json-backup` assertion remains incomplete as documented in F-1-3.
+- Ran the complete clean suite: `npm test` passed 18/18.
+- Ran `npm run build`: passed; `dist/` was created; JavaScript is 29.93 KB raw and 9.88 KB gzip.
+- Ran live Axe checks on home, demo, settings, privacy, terms, and not-found routes at 390 px with dark color scheme and reduced motion: zero violations.
+- Ran `/opt/fleet/lib/verify-url.sh` against the live home page: passed.
+- Confirmed no live console errors, horizontal overflow, or visible targets below 44 × 44.
+- Rechecked prior checkout, touch-target, and asset-cache findings; all three remain fixed.
+
+## Evidence and next step
+
+The complete first-read notes, copy counts, claim matrix, exact findings, and fixes are in [review-1.md](review-1.md). The next worker should resolve all findings, especially moving real sample tickets into the initial demo viewport, and then rerun the review from a fresh context.
+
+---
+
+# Earlier repair handoff
 
 Completed 2 September 2026 for work order `storage-aware-expiry-repair-1`.
 
