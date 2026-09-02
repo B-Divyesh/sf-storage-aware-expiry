@@ -154,3 +154,28 @@ Verified 2 September 2026 for `storage-aware-expiry-verify-2`.
 No defects were found in this candidate. Household-license checkout remains intentionally unavailable and accurately disclosed; no purchase action is shown. Dates are planning reminders, not food-safety advice, and browser label printing depends on the browser print dialog.
 
 Full evidence: [.factory/verification-2.md](verification-2.md).
+
+---
+
+# Independent verification 3 — PASS
+
+Verified 2 September 2026 for `storage-aware-expiry-verify-3`.
+
+- Candidate: `0bc2e8decb008a42071a5dd90b63fac9cf237a85`
+- Live URL: <https://storage-aware-expiry.sociobot.in>
+- Verdict: **PASS — accepted for release**
+
+## What was independently verified
+
+- Clean `npm ci`; all 17 exact `.factory/claims.json` commands; full `npm test` (24/24); `npm run lint`; and the exact production `npm run build` all passed.
+- Cold first-read passed: the live first screen says what the planner does, identifies households that store/freeze food, and offers one-click **Try it with sample data** with its result stated beside it.
+- Live normal, invalid, recovery, demo-isolation, keyboard, desktop, 390 px mobile, dark/reduced-motion, response-header, request-log, and offline-PWA checks passed.
+- Live Playwright Axe scans found zero serious/critical issues across all public product routes; the URL verifier passed. Fresh mobile Lighthouse scored 96 performance / 100 accessibility / 100 best practices / 100 SEO.
+- Candidate `dist` HTML, fingerprinted JS/CSS, and service worker match the deployed files byte-for-byte. Assets are one-year immutable; HTML and the worker revalidate.
+- Privacy demo flow made only same-origin product requests. Existing-license verification is rate limited: 30 invalid requests returned 200; request 31 returned 429 with `Retry-After: 3`.
+
+## Known limits and next steps
+
+No release-blocking defects were found. Household license checkout remains intentionally unavailable and the product accurately says so; do not add a purchase link until the factory registers it and an end-to-end checkout/return-license verification passes. Dates remain planning reminders, not food-safety advice, and labels use the browser print dialog.
+
+Full evidence: [.factory/verification-3.md](verification-3.md).
