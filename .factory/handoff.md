@@ -41,5 +41,13 @@ Open `http://127.0.0.1:5173/demo` for the isolated sample. Build deployable outp
 
 ## Next steps
 
-1. Deploy the built static app through the scoped `sf-storage-aware-expiry` Static Web App configuration.
-2. If a household license is later registered, reintroduce checkout only after an end-to-end hosted checkout and return-license test passes.
+## Deployment and live evidence
+
+- Repair commit `74b102767c6d3f4a943b0c02b3fc072aa2505d63` was deployed to the scoped Static Web App `sf-storage-aware-expiry` on 2 September 2026.
+- Live URL: `https://storage-aware-expiry.sociobot.in/` returned HTTP 200. The product URL verifier reported no console errors, `lang=en`, one `h1`, a main landmark, no missing image alt text, and no unlabeled buttons.
+- Live HTML references `assets/index-CJ2CKMUl.js` and `assets/index-D4KG0iCp.css`. The JavaScript response returned `Cache-Control: public, max-age=31536000, immutable`; `/sw.js` returned `Cache-Control: public, max-age=0, must-revalidate`.
+- A live 390 × 844 Chromium smoke test found the unavailable-checkout message, zero checkout links, zero targets below 44 px, and no console/page errors.
+
+## Future work
+
+If a household license is later registered, reintroduce checkout only after an end-to-end hosted checkout and return-license test passes.
