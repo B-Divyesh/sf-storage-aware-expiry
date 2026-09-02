@@ -320,6 +320,36 @@ test('regression: every application route has route-specific metadata and the st
   }
 });
 
+test('regression: every public footer points to the live Param Factory storefront', async ({ page, request }) => {
+  const storefront = 'https://hello-factory.sociobot.in/';
+  const publicRoutes = ['/', '/demo', '/settings', '/privacy', '/terms', '/print/sample-soup?demo=1'];
+  const crawledLinks = new Set<string>();
+
+  for (const route of publicRoutes) {
+    await page.goto(route);
+    const footerLink = page.getByRole('link', { name: 'Built by Param Factory (external site)' });
+    await expect(footerLink).toHaveAttribute('href', storefront);
+    await expect(page.locator('a[href*="hello.sociobot.in"]')).toHaveCount(0);
+    for (const href of await page.locator('a[href]').evaluateAll(links => [...new Set(links.map(link => (link as HTMLAnchorElement).href))])) {
+      if (/^https?:\/\//.test(href)) crawledLinks.add(href);
+    }
+  }
+
+  const static404 = await request.get('/404.html');
+  expect(static404.ok()).toBe(true);
+  const static404Html = await static404.text();
+  expect(static404Html).toContain(`href="${storefront}"`);
+  expect(static404Html).not.toContain('hello.sociobot.in');
+
+  // This reproduces the verifier's link crawl: every rendered HTTP(S) link
+  // must resolve successfully, not merely appear in the markup. Mail links
+  // are intentionally excluded because they do not have an HTTP response.
+  for (const href of crawledLinks) {
+    const response = await request.get(href, { maxRedirects: 5, timeout: 15_000 });
+    expect(response.ok(), href).toBe(true);
+  }
+});
+
 test('@claim:preset-settings saves user date presets', async ({ page }) => {
   await page.goto('/settings?demo=1');
   await page.locator('#preset-freezer').fill('120');

@@ -217,6 +217,7 @@ const pageTitles: Record<string, string> = {
 };
 
 const siteUrl = 'https://storage-aware-expiry.sociobot.in';
+const factoryStorefrontUrl = 'https://hello-factory.sociobot.in/';
 const routeMetadata: Record<string, { title: string; description: string }> = {
   '/': { title: pageTitles['/'], description: 'Plan pantry, fridge, and freezer dates. See what to use first, print labels, and keep every item on your device.' },
   '/demo': { title: pageTitles['/demo'], description: 'Try five sample pantry, fridge, and freezer items. Demo changes are separate from your saved items.' },
@@ -261,7 +262,7 @@ function header() {
 function footer() {
   return `<footer class="site-footer"><div class="footer-inner">
     <div class="footer-copy"><strong>Storage-Aware Expiry</strong><p>Plan pantry, fridge, and freezer dates. Dates are reminders, not food-safety advice.</p><p>Original generated artwork is disclosed in the design notes.</p></div>
-    <div class="footer-links"><a href="/privacy${demoMode ? '?demo=1' : ''}" data-link>Privacy</a><a href="/terms${demoMode ? '?demo=1' : ''}" data-link>Terms</a><a href="https://hello.sociobot.in" rel="external">Built by Param Factory (external site)</a><span class="build-id">v1.0.2</span></div>
+    <div class="footer-links"><a href="/privacy${demoMode ? '?demo=1' : ''}" data-link>Privacy</a><a href="/terms${demoMode ? '?demo=1' : ''}" data-link>Terms</a><a href="${factoryStorefrontUrl}" rel="external">Built by Param Factory (external site)</a><span class="build-id">v1.0.3</span></div>
   </div></footer>`;
 }
 

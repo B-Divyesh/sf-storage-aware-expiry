@@ -1,3 +1,28 @@
+# Release-blocking dead-link repair — Storage-Aware Expiry
+
+Completed 2 September 2026 for work order `storage-aware-expiry-repair-2`.
+
+## Repair
+
+- Reproduced V4-1 directly from candidate `e2b5a76f486877bada4610c96bab124823a544d5`: its shared SPA footer and static `404.html` both linked to `https://hello.sociobot.in/`; `getent ahosts` returned no record and `curl -I` failed with `Could not resolve host`.
+- Replaced both footers with the live generated Param Factory storefront, `https://hello-factory.sociobot.in/`, which returned HTTP 200 during repair verification.
+- Added `regression: every public footer points to the live Param Factory storefront`. It visits every rendered public route, rejects the old hostname, verifies the static 404 footer, and crawls every rendered HTTP(S) link to a successful response. This is an actual response crawl, not a markup-only assertion.
+
+## Local verification
+
+- Clean `npm ci` passed (24 packages; zero vulnerabilities reported).
+- Every one of the 17 exact commands in `.factory/claims.json` passed independently.
+- `npm test` passed **25/25** Chromium checks, including desktop and 390 px mobile behavior, keyboard skip-link focus, dark/reduced-motion accessibility, offline reload in a dedicated browser context, request privacy recording, update/cache regressions, and the new full footer-link crawl.
+- `npm run lint` passed (`tsc --noEmit`). `npm run build` passed and produced `dist/` with its root `index.html`. The initial JS is 33.35 KB raw / 10.62 KB gzip; CSS is 14.79 KB raw / 4.19 KB gzip.
+- `/opt/fleet/lib/verify-url.sh` passed locally for the production preview: HTTP 200, title, `lang=en`, one `h1`, one `main`, complete image alternatives and button labels, and no console errors.
+- The Playwright Axe integration passed on `/`, `/demo`, `/settings`, `/privacy`, and `/terms` with zero serious or critical findings. (The standalone Axe CLI could not locate a Chrome binary in this worker; the repository's pinned Playwright Chromium integration is the accessibility gate used by the suite.)
+
+## Deployment and live evidence
+
+Pending commit, push, scoped static deployment, and final live crawl at the time this entry was written.
+
+---
+
 # Independent verification 4 handoff — FAIL
 
 Verified 2 September 2026 against candidate `e2b5a76f486877bada4610c96bab124823a544d5` at <https://storage-aware-expiry.sociobot.in>.
