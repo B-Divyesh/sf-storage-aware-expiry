@@ -18,9 +18,9 @@ Try the isolated sample at `/demo`. The deployed URL is <https://storage-aware-e
 
 Dates are planning reminders, not food-safety advice. The app does not decide whether food is safe to eat.
 
-## Free and paid use
+## Free use
 
-The free plan supports 20 active items, editable presets, exports, and single-label printing. A ₹399 one-time household license adds unlimited active items and batch label printing. Checkout and verification use only the Sociobot billing API; there is no embedded payment provider or product ID.
+The free plan supports 20 active items, editable presets, exports, and single-label printing. Household license checkout is currently unavailable. Existing licenses can still be checked through the Sociobot billing API; there is no embedded payment provider or product ID.
 
 ## Run locally
 

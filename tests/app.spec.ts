@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 
 function futureDate(days: number) {
   const date = new Date();
@@ -100,6 +102,13 @@ test('@claim:paid-license adds batch printing and removes the active-item limit'
   await expect(page.locator('.print-label')).toHaveCount(21);
 });
 
+test('@claim:checkout-unavailable regression: unavailable checkout is not advertised or linked', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByText('Household license checkout is currently unavailable.')).toBeVisible();
+  await expect(page.locator('a[href*="/checkout"]')).toHaveCount(0);
+  await expect(page.getByRole('link', { name: /buy a household license/i })).toHaveCount(0);
+});
+
 test('@claim:item-workflow adds, edits, completes, and restores an item', async ({ page }) => {
   await page.goto('/demo');
   await page.locator('#item-name').fill('Tomato sauce');
@@ -190,4 +199,38 @@ test('dark theme and 390px layout pass accessibility checks', async ({ page }) =
   const hasOverflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
   expect(hasOverflow).toBe(false);
   await expect(page.locator('#item-name')).toBeVisible();
+});
+
+test('regression: every visible mobile target is at least 44px', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const path of ['/', '/demo', '/settings?demo=1', '/privacy', '/terms']) {
+    await page.goto(path);
+    const undersized = await page.locator('a[href], button, input:not([type="hidden"]), select, textarea').evaluateAll(elements => elements
+      .filter(element => {
+        const style = getComputedStyle(element);
+        return style.display !== 'none' && style.visibility !== 'hidden' && element.getClientRects().length > 0;
+      })
+      .map(element => {
+        const rect = element.getBoundingClientRect();
+        return { label: (element.textContent || element.getAttribute('aria-label') || element.id).trim(), width: rect.width, height: rect.height };
+      })
+      .filter(target => target.width < 44 || target.height < 44));
+    expect(undersized, `${path}: ${JSON.stringify(undersized)}`).toEqual([]);
+  }
+});
+
+test('regression: production assets are fingerprinted and configured for immutable caching', async () => {
+  const root = process.cwd();
+  const [index, worker, config] = await Promise.all([
+    readFile(join(root, 'dist/index.html'), 'utf8'),
+    readFile(join(root, 'dist/sw.js'), 'utf8'),
+    readFile(join(root, 'dist/staticwebapp.config.json'), 'utf8')
+  ]);
+  expect(index).toMatch(/assets\/index-[a-zA-Z0-9_-]+\.js/);
+  expect(index).toMatch(/assets\/index-[a-zA-Z0-9_-]+\.css/);
+  expect(worker).not.toContain('/assets/app.js');
+  expect(worker).not.toContain('/assets/app.css');
+  expect(worker).toMatch(/assets\/index-[a-zA-Z0-9_-]+\.js/);
+  expect(config).toContain('public, max-age=31536000, immutable');
+  expect(config).toContain('"route": "/sw.js"');
 });

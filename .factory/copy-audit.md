@@ -32,8 +32,8 @@ Audited 2 September 2026. Counts treat hyphenated terms as one word. No line exc
 | Mark the item used when it leaves storage. | 8 | Pass |
 | This tool does not say whether food is safe. | 9 | Pass |
 | It does not scan barcodes, track nutrition, or follow every purchase. | 11 | Pass |
-| Pay once for unlimited active items and batch label printing. | 9 | Pass |
-| Date presets, exports, and single labels stay free. | 8 | Pass |
+| Date presets, exports, and single labels are free. | 8 | Pass |
+| Household license checkout is currently unavailable. | 6 | Pass |
 | Plan pantry, fridge, and freezer dates. | 6 | Pass |
 | Dates are reminders, not food-safety advice. | 6 | Pass |
 | Original generated artwork is disclosed in the design notes. | 8 | Pass |

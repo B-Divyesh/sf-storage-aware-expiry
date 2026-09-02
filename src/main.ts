@@ -279,20 +279,20 @@ function homePage() {
 }
 
 function pricingSection() {
-  return `<section class="pricing" id="pricing"><div class="shell"><div class="price-panel"><div><p class="eyebrow">Household license</p><h2>Keep more than 20 active items</h2><p>Pay once for unlimited active items and batch label printing. Date presets, exports, and single labels stay free.</p><p><a href="/terms" data-link>Read purchase terms</a></p></div><div><p class="price">₹399 <small>one-time purchase</small></p>${paid ? '<p><strong>Household license active</strong></p>' : `<a class="button primary" href="https://api.sociobot.in/api/v1/products/storage-aware-expiry/checkout">Buy a household license</a><form class="license-form" id="license-form"><label class="sr-only" for="license-token">License token</label><input id="license-token" name="license" autocomplete="off" placeholder="Paste an existing license"><button type="submit">Restore purchase</button></form>`}</div></div></div></section>`;
+  return `<section class="pricing" id="pricing"><div class="shell"><div class="price-panel"><div><p class="eyebrow">Free plan</p><h2>Use the free planner for up to 20 items</h2><p>Date presets, exports, and single labels are free. Household license checkout is currently unavailable.</p><p><a href="/terms" data-link>Read terms</a></p></div><div>${paid ? '<p><strong>Existing household license active</strong></p>' : '<p class="price">Free <small>20 active items</small></p>'}</div></div></div></section>`;
 }
 
 function settingsPage() {
   return `<main id="main" class="settings-page"><p class="eyebrow">Local controls</p><h1>Set your storage date defaults</h1><p class="lede">These dates are planning reminders. Choose values that match your household guidance.</p>
     <form class="settings-box" id="preset-form"><h2>Date presets</h2><div class="preset-grid"><div class="field"><label for="preset-pantry">Pantry days</label><input type="number" id="preset-pantry" name="pantry" min="1" max="3650" value="${presets.pantry}" required></div><div class="field"><label for="preset-fridge">Fridge days</label><input type="number" id="preset-fridge" name="fridge" min="1" max="3650" value="${presets.fridge}" required></div><div class="field"><label for="preset-freezer">Freezer days</label><input type="number" id="preset-freezer" name="freezer" min="1" max="3650" value="${presets.freezer}" required></div></div><p id="preset-error" class="form-error" aria-live="assertive" hidden></p><div class="form-actions"><button class="primary" type="submit">Save date presets</button><button type="button" id="reset-presets">Restore default presets</button></div></form>
     <section class="settings-box"><h2>Own your data</h2><p>Export a backup or move your items to another browser. Imports replace items with matching IDs.</p><div class="data-actions"><button id="export-json">Export JSON backup</button><button id="export-csv">Export list as CSV</button><label class="button" for="import-json">Import JSON backup</label><input id="import-json" type="file" accept="application/json,.json" hidden></div><p id="import-status" aria-live="polite"></p></section>
-    <section class="settings-box"><h2>Household license</h2><p>${paid ? 'Your household license is active on this browser.' : 'The free plan holds 20 active items. A ₹399 one-time license removes that limit and adds batch printing.'}</p>${paid ? `<div class="data-actions"><a class="button primary" href="/print-all${demoMode ? '?demo=1' : ''}" data-link>Print all active labels</a><button id="remove-license" class="danger">Remove license from this browser</button></div>` : '<a class="button primary" href="/#pricing">See the household license</a>'}</section>
+    <section class="settings-box"><h2>Household license</h2><p>${paid ? 'Your existing household license is active on this browser.' : 'The free plan holds 20 active items. Household license checkout is currently unavailable.'}</p>${paid ? `<div class="data-actions"><a class="button primary" href="/print-all${demoMode ? '?demo=1' : ''}" data-link>Print all active labels</a><button id="remove-license" class="danger">Remove license from this browser</button></div>` : ''}</section>
   </main>`;
 }
 
 function legalPage(kind: 'privacy' | 'terms') {
-  if (kind === 'privacy') return `<main id="main" class="legal-page"><p class="eyebrow">Last updated 2 September 2026</p><h1>Your inventory stays in this browser</h1><div class="prose"><h2>What is stored</h2><p>Items, dates, notes, presets, and completion history are stored in IndexedDB on this device. Demo changes use a separate temporary browser key.</p><h2>What leaves the device</h2><p>The inventory app sends no item data to us. Buying or checking a license contacts the Sociobot billing API. The request contains the license token, not your inventory.</p><h2>Your choices</h2><p>Use Settings to export your data. Clear this site's browser data to erase local records. Starting for real does not copy demo items.</p><h2>Contact</h2><p>Email <a href="mailto:privacy@sociobot.in">privacy@sociobot.in</a> with privacy questions.</p></div></main>`;
-  return `<main id="main" class="legal-page"><p class="eyebrow">Last updated 2 September 2026</p><h1>Terms for using this date planner</h1><div class="prose"><h2>Planning dates</h2><p>Dates are personal planning reminders. They are not food-safety advice or a finding that food is safe to eat.</p><h2>Free and paid use</h2><p>The free plan supports 20 active items. The ₹399 household license is a one-time purchase for unlimited active items and batch label printing.</p><h2>Purchases</h2><p>Sociobot and Dodo are the merchant of record. Checkout, receipts, refunds, and license revocation are handled there. A refunded license stops unlocking paid features.</p><h2>Your data</h2><p>You are responsible for backups and your device. Export tools are available in Settings.</p><h2>Liability</h2><p>The software is provided as-is under the MIT License. Use official food-safety advice when you are uncertain.</p></div></main>`;
+  if (kind === 'privacy') return `<main id="main" class="legal-page"><p class="eyebrow">Last updated 2 September 2026</p><h1>Your inventory stays in this browser</h1><div class="prose"><h2>What is stored</h2><p>Items, dates, notes, presets, and completion history are stored in IndexedDB on this device. Demo changes use a separate temporary browser key.</p><h2>What leaves the device</h2><p>The inventory app sends no item data to us. Checking an existing license contacts the Sociobot billing API. The request contains the license token, not your inventory.</p><h2>Your choices</h2><p>Use Settings to export your data. Clear this site's browser data to erase local records. Starting for real does not copy demo items.</p><h2>Contact</h2><p>Email <a href="mailto:privacy@sociobot.in">privacy@sociobot.in</a> with privacy questions.</p></div></main>`;
+  return `<main id="main" class="legal-page"><p class="eyebrow">Last updated 2 September 2026</p><h1>Terms for using this date planner</h1><div class="prose"><h2>Planning dates</h2><p>Dates are personal planning reminders. They are not food-safety advice or a finding that food is safe to eat.</p><h2>Free use</h2><p>The free plan supports 20 active items, date presets, exports, and single-label printing.</p><h2>Household licenses</h2><p>Household license checkout is currently unavailable. Existing licenses may continue to unlock their saved features.</p><h2>Your data</h2><p>You are responsible for backups and your device. Export tools are available in Settings.</p><h2>Liability</h2><p>The software is provided as-is under the MIT License. Use official food-safety advice when you are uncertain.</p></div></main>`;
 }
 
 function printPage(id: string) {
@@ -302,7 +302,7 @@ function printPage(id: string) {
 }
 
 function printAllPage() {
-  if (!paid) return `<main id="main" class="print-page"><h1>A household license is needed</h1><p>Batch printing is part of the ₹399 one-time household license.</p><a class="button" href="/settings" data-link>Return to settings</a></main>`;
+  if (!paid) return `<main id="main" class="print-page"><h1>An existing household license is needed</h1><p>Batch printing is for existing household licenses. Checkout is currently unavailable.</p><a class="button" href="/settings" data-link>Return to settings</a></main>`;
   const active = items.filter(item => !item.consumedAt).sort((a, b) => a.plannedDate.localeCompare(b.plannedDate));
   return `<main id="main" class="print-page"><h1>Print all active labels</h1><p>${active.length} label${active.length === 1 ? '' : 's'} will print in use-first order.</p><div class="print-controls"><button class="primary" id="print-label">Print all labels</button><a class="button" href="/settings" data-link>Return to settings</a></div>${active.map(item => `<section class="print-label" aria-label="Printable label for ${escapeHtml(item.name)}"><span class="label-location">${item.location}</span><h2>${escapeHtml(item.name)}</h2><div class="label-date"><span>${item.location === 'freezer' ? 'Frozen' : 'Stored'} ${formatDate(item.frozenOn || item.storedOn)}</span><span>Use by ${formatDate(item.plannedDate)}</span></div></section>`).join('')}</main>`;
 }
@@ -368,7 +368,7 @@ async function handleItemSubmit(event: SubmitEvent) {
   }
   const activeCount = items.filter(item => !item.consumedAt && item.id !== editId).length;
   if (!editId && !paid && !demoMode && activeCount >= 20) {
-    error.textContent = 'The free plan holds 20 active items. Mark one used or buy the household license.';
+    error.textContent = 'The free plan holds 20 active items. Mark one used to add another.';
     error.hidden = false;
     return;
   }
@@ -460,11 +460,6 @@ function bindEvents() {
     download('storage-aware-expiry.csv', rows.map(row => row.map(quote).join(',')).join('\n'), 'text/csv');
   });
   document.querySelector<HTMLInputElement>('#import-json')?.addEventListener('change', importBackup);
-  document.querySelector<HTMLFormElement>('#license-form')?.addEventListener('submit', async event => {
-    event.preventDefault(); const token = String(new FormData(event.currentTarget as HTMLFormElement).get('license') ?? '').trim();
-    if (!token) { showToast('Paste the license from your receipt, then restore again.'); return; }
-    localStorage.setItem(LICENSE_KEY, token); localStorage.removeItem(LICENSE_CACHE_KEY); await verifyLicense(true);
-  });
   document.querySelector('#remove-license')?.addEventListener('click', () => { localStorage.removeItem(LICENSE_KEY); localStorage.removeItem(LICENSE_CACHE_KEY); paid = false; render(); showToast('The license was removed from this browser.'); });
 }
 
