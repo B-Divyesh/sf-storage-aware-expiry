@@ -1,0 +1,86 @@
+[
+  {
+    "id": "location-defaults",
+    "claim": "The suggested date changes with the selected storage place.",
+    "where": "landing app and How it works",
+    "test": "npm test -- --grep @claim:location-defaults",
+    "sandbox": "fresh browser context at /demo; select fridge and freezer; compare suggested dates"
+  },
+  {
+    "id": "use-first-order",
+    "claim": "The earliest planned date stays first.",
+    "where": "landing app and How it works",
+    "test": "npm test -- --grep @claim:use-first-order",
+    "sandbox": "fresh browser context at /demo; assert the first two sample items match their planned dates"
+  },
+  {
+    "id": "csv-export",
+    "claim": "Exports the stored-item list as CSV.",
+    "where": "landing capabilities and Settings",
+    "test": "npm test -- --grep @claim:csv-export",
+    "sandbox": "fresh browser context at /settings?demo=1; assert the download contains five sample rows"
+  },
+  {
+    "id": "print-label",
+    "claim": "Creates a browser-printable label for an active item.",
+    "where": "landing capabilities and item actions",
+    "test": "npm test -- --grep @claim:print-label",
+    "sandbox": "fresh browser context at /demo; open the soup label and emulate print media"
+  },
+  {
+    "id": "local-only",
+    "claim": "Inventory data stays on this device.",
+    "where": "landing facts, Privacy, README",
+    "test": "npm test -- --grep @claim:local-only",
+    "sandbox": "fresh browser context at /demo; record all requests while adding an item; assert same-origin only"
+  },
+  {
+    "id": "offline-reload",
+    "claim": "Works offline after the first visit.",
+    "where": "landing facts and README",
+    "test": "npm test -- --grep @claim:offline-reload",
+    "sandbox": "dedicated fresh browser context at /demo; wait for service worker, go offline, reload, and read sample data"
+  },
+  {
+    "id": "free-limit",
+    "claim": "The free plan supports 20 active items.",
+    "where": "landing facts, pricing, Terms",
+    "test": "npm test -- --grep @claim:free-limit",
+    "sandbox": "fresh real-data browser context; add 20 items and assert the twenty-first is refused"
+  },
+  {
+    "id": "paid-license",
+    "claim": "A valid household license adds batch printing and removes the active-item limit.",
+    "where": "pricing, Settings, Terms",
+    "test": "npm test -- --grep @claim:paid-license",
+    "sandbox": "fresh browser context with a valid cached fixture verdict; add 21 items and render all 21 labels"
+  },
+  {
+    "id": "item-workflow",
+    "claim": "Adds, edits, completes, and restores an item.",
+    "where": "landing app and README",
+    "test": "npm test -- --grep @claim:item-workflow",
+    "sandbox": "fresh browser context at /demo; add an item, edit its quantity, mark it used, then undo"
+  },
+  {
+    "id": "demo-isolation",
+    "claim": "Demo changes are separate from real inventory and can be reset.",
+    "where": "demo banner and demo documentation",
+    "test": "npm test -- --grep @claim:demo-isolation",
+    "sandbox": "fresh browser context at /demo; add a sixth sample, reset, then start for real and assert an empty list"
+  },
+  {
+    "id": "json-backup",
+    "claim": "Exports and imports JSON backups.",
+    "where": "landing capabilities, Settings, README",
+    "test": "npm test -- --grep @claim:json-backup",
+    "sandbox": "fresh browser context at /settings?demo=1; download JSON and import a valid fixture record"
+  },
+  {
+    "id": "preset-settings",
+    "claim": "Users can set storage date presets.",
+    "where": "landing capabilities, Settings, README",
+    "test": "npm test -- --grep @claim:preset-settings",
+    "sandbox": "fresh browser context at /settings?demo=1; set freezer to 120 days and verify the next suggested date"
+  }
+]
