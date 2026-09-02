@@ -22,9 +22,9 @@ Completed 2 September 2026 for `storage-aware-expiry-polish-2`.
 
 ## Verification
 
-- Fresh dependencies: `npm ci` completed with zero audit vulnerabilities.
-- Every one of the 17 exact commands in `.factory/claims.json` was run separately. All passed.
-- `npm test` passed 24/24 Chromium tests, including Axe integration on major routes and 390 px dark/reduced-motion demo.
+- Fresh clone `/tmp/storage-aware-expiry-round2-clean`: `npm ci` completed with zero audit vulnerabilities.
+- Every one of the 17 exact commands in `.factory/claims.json` was run separately from that clone. All passed.
+- The clean-clone `npm test` passed 24/24 Chromium tests, including Axe integration on major routes and 390 px dark/reduced-motion demo.
 - `npm run lint` and `npm run build` passed. The built JS is 33.33 KB raw / 10.61 KB gzip and CSS is 14.79 KB raw / 4.19 KB gzip.
 - `/opt/fleet/lib/verify-url.sh http://127.0.0.1:4173/demo /tmp/storage-aware-expiry-verify-round2-final` passed with no console errors, one `h1`, a `main`, `lang=en`, labels, and image alt text.
 - The catalog sentence is now verb-first and 73 characters: “Plan storage-aware dates to use pantry, fridge, and freezer items first.”

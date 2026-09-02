@@ -218,8 +218,8 @@ Completed 2 September 2026 for `storage-aware-expiry-polish-2`.
 
 ## Local evidence
 
-- `npm ci` completed with zero audit vulnerabilities.
-- All 17 exact claim commands in `.factory/claims.json` passed separately. The aggregate browser suite passed **24/24**.
+- Fresh clone `/tmp/storage-aware-expiry-round2-clean`: `npm ci` completed with zero audit vulnerabilities.
+- All 17 exact claim commands in `.factory/claims.json` passed separately from that clone. Its aggregate browser suite passed **24/24**.
 - `npm run lint` and `npm run build` passed; `dist/` contains the PWA output. Built JS is 33.33 KB raw / 10.61 KB gzip; CSS is 14.79 KB raw / 4.19 KB gzip.
 - Playwright Axe integration reports zero serious or critical findings. `/opt/fleet/lib/verify-url.sh` passed against `/demo` with no console errors and correct title, language, main landmark, heading, labels, and alt text.
 - Local demo evidence: `/tmp/storage-aware-expiry-round2-local-demo-390.png`.
