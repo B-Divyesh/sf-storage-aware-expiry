@@ -202,3 +202,30 @@ Completed 2 September 2026 for work order `storage-aware-expiry-review-2`.
 ## Required next step
 
 In demo mode, never read/write/remove `sb_license:storage-aware-expiry` or its cached verdict; ignore or explicitly leave demo before accepting `license` query parameters. Add a regression to `@claim:demo-isolation` for seeded real license state and `/demo?license=…`, then redo the adversarial review.
+
+---
+
+# Polish round 2 repair
+
+Completed 2 September 2026 for `storage-aware-expiry-polish-2`.
+
+## What changed
+
+- Demo mode establishes its isolated state before any license code runs. It neither reads nor changes `sb_license:storage-aware-expiry` or `sb_license_verdict:storage-aware-expiry`; a `license` parameter on a demo URL is ignored.
+- Demo Settings no longer renders household-license controls, and demo always renders as unpaid even when real browser keys contain a valid cached verdict.
+- `@claim:demo-isolation` now seeds both real license keys and covers `/demo`, `/settings?demo=1`, and `/demo?license=demo-write-token`, before also checking reset and Start for real.
+- Updated the demo documentation, README privacy wording, claims manifest, catalog description, and footer build marker to reflect the release.
+
+## Local evidence
+
+- `npm ci` completed with zero audit vulnerabilities.
+- All 17 exact claim commands in `.factory/claims.json` passed separately. The aggregate browser suite passed **24/24**.
+- `npm run lint` and `npm run build` passed; `dist/` contains the PWA output. Built JS is 33.33 KB raw / 10.61 KB gzip; CSS is 14.79 KB raw / 4.19 KB gzip.
+- Playwright Axe integration reports zero serious or critical findings. `/opt/fleet/lib/verify-url.sh` passed against `/demo` with no console errors and correct title, language, main landmark, heading, labels, and alt text.
+- Local demo evidence: `/tmp/storage-aware-expiry-round2-local-demo-390.png`.
+
+## Remaining scope
+
+No known product defects remain. Household license checkout remains intentionally unavailable and is accurately disclosed. Dates remain planning reminders, not food-safety advice; labels use the browser print dialog.
+
+See [.factory/polish-2.md](polish-2.md) for the finding-by-finding mapping. Deployment commit and cold live evidence are added after deployment.

@@ -144,8 +144,32 @@ test('pages have one h1, keyboard focus, and no serious axe findings', async ({ 
   await expect(page.getByRole('link', { name: 'Skip to main content' })).toBeFocused();
 });
 
-test('@claim:demo-isolation resets sample items and does not enter real data', async ({ page }) => {
+test('@claim:demo-isolation resets sample items without touching real inventory or license state', async ({ page }) => {
+  const realLicense = 'real-license-fixture';
+  const realVerdict = JSON.stringify({ valid: true, checkedAt: 123456789 });
+  await page.addInitScript(({ licenseKey, cacheKey, license, verdict }) => {
+    localStorage.setItem(licenseKey, license);
+    localStorage.setItem(cacheKey, verdict);
+  }, { licenseKey: 'sb_license:storage-aware-expiry', cacheKey: 'sb_license_verdict:storage-aware-expiry', license: realLicense, verdict: realVerdict });
   await page.goto('/demo');
+  await expect(page.getByText('Your existing household license is active on this browser.')).toHaveCount(0);
+  await expect(page.locator('#license-token')).toHaveCount(0);
+  await expect(page.evaluate(() => ({
+    license: localStorage.getItem('sb_license:storage-aware-expiry'),
+    verdict: localStorage.getItem('sb_license_verdict:storage-aware-expiry')
+  }))).resolves.toEqual({ license: realLicense, verdict: realVerdict });
+  await page.goto('/settings?demo=1');
+  await expect(page.getByText('Household license')).toHaveCount(0);
+  await expect(page.evaluate(() => ({
+    license: localStorage.getItem('sb_license:storage-aware-expiry'),
+    verdict: localStorage.getItem('sb_license_verdict:storage-aware-expiry')
+  }))).resolves.toEqual({ license: realLicense, verdict: realVerdict });
+  await page.goto('/demo?license=demo-write-token');
+  await expect(page.getByText('Your existing household license is active on this browser.')).toHaveCount(0);
+  await expect(page.evaluate(() => ({
+    license: localStorage.getItem('sb_license:storage-aware-expiry'),
+    verdict: localStorage.getItem('sb_license_verdict:storage-aware-expiry')
+  }))).resolves.toEqual({ license: realLicense, verdict: realVerdict });
   await page.locator('#item-name').fill('Temporary item');
   await page.getByRole('button', { name: 'Add item to the list' }).click();
   await expect(page.locator('.item-ticket')).toHaveCount(6);

@@ -48,7 +48,7 @@ Deploy the contents of `dist/` as a static site. `staticwebapp.config.json` send
 
 ## Privacy
 
-Saved items stay in this browser. Demo changes use separate temporary browser storage. License checks send the pasted token to Sociobot, never inventory items.
+Saved items stay in this browser. Demo changes use separate temporary browser storage and do not read or change saved license data. License checks send the pasted token to Sociobot, never inventory items.
 
 See `/privacy` and `/terms` in the app. See [.factory/demo.md](.factory/demo.md), [.factory/design.md](.factory/design.md), and [.factory/claims.json](.factory/claims.json) for verification details.
 

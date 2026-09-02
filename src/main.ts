@@ -33,6 +33,16 @@ let lastConsumed: Item | null = null;
 let demoMode = location.pathname === '/demo' || new URLSearchParams(location.search).get('demo') === '1';
 let paid = false;
 
+function isDemoUrl(url = new URL(location.href)) {
+  return url.pathname === '/demo' || url.searchParams.get('demo') === '1';
+}
+
+function syncDemoMode() {
+  demoMode = isDemoUrl();
+  // A demo is deliberately not entitled by, or connected to, browser license state.
+  if (demoMode) paid = false;
+}
+
 const today = () => new Date().toISOString().slice(0, 10);
 const addDays = (date: string, days: number) => {
   const value = new Date(`${date}T12:00:00Z`);
@@ -149,6 +159,12 @@ async function loadData() {
 }
 
 function checkLicenseFromUrl() {
+  // This guard must precede every localStorage operation. Demo mode is an
+  // isolated sample, including its entitlement state and return URL tokens.
+  if (demoMode) {
+    paid = false;
+    return;
+  }
   const url = new URL(location.href);
   const token = url.searchParams.get('license');
   if (token) {
@@ -166,8 +182,13 @@ function checkLicenseFromUrl() {
 }
 
 async function verifyLicense(force = false) {
+  // Do not even read real entitlement storage while the demo banner is shown.
+  if (demoMode) {
+    paid = false;
+    return;
+  }
   const token = localStorage.getItem(LICENSE_KEY);
-  if (!token || demoMode) return;
+  if (!token) return;
   const cachedRaw = localStorage.getItem(LICENSE_CACHE_KEY);
   if (!force && cachedRaw) {
     try {
@@ -240,7 +261,7 @@ function header() {
 function footer() {
   return `<footer class="site-footer"><div class="footer-inner">
     <div class="footer-copy"><strong>Storage-Aware Expiry</strong><p>Plan pantry, fridge, and freezer dates. Dates are reminders, not food-safety advice.</p><p>Original generated artwork is disclosed in the design notes.</p></div>
-    <div class="footer-links"><a href="/privacy${demoMode ? '?demo=1' : ''}" data-link>Privacy</a><a href="/terms${demoMode ? '?demo=1' : ''}" data-link>Terms</a><a href="https://hello.sociobot.in" rel="external">Built by Param Factory (external site)</a><span class="build-id">v1.0.1</span></div>
+    <div class="footer-links"><a href="/privacy${demoMode ? '?demo=1' : ''}" data-link>Privacy</a><a href="/terms${demoMode ? '?demo=1' : ''}" data-link>Terms</a><a href="https://hello.sociobot.in" rel="external">Built by Param Factory (external site)</a><span class="build-id">v1.0.2</span></div>
   </div></footer>`;
 }
 
@@ -320,10 +341,13 @@ function pricingSection() {
 }
 
 function settingsPage() {
+  const licenseControls = demoMode
+    ? ''
+    : `<section class="settings-box"><h2>Household license</h2><p>${paid ? 'Your existing household license is active on this browser.' : 'The free plan holds 20 active items. Household license checkout is currently unavailable.'}</p><form class="license-form" id="license-form"><label class="sr-only" for="license-token">Existing license token</label><input id="license-token" name="license" autocomplete="off" placeholder="Paste an existing license token"><button type="submit">Check existing license</button></form><p id="license-status" aria-live="polite"></p>${paid ? `<div class="data-actions"><a class="button primary" href="/print-all" data-link>Print all active labels</a><button id="remove-license" class="danger">Remove license from this browser</button></div>` : ''}</section>`;
   return `<main id="main" class="settings-page"><p class="eyebrow">Local controls</p><h1>Set your storage date defaults</h1><p class="lede">These dates are planning reminders. Choose values that match your household guidance.</p>
     <form class="settings-box" id="preset-form"><h2>Date presets</h2><div class="preset-grid"><div class="field"><label for="preset-pantry">Pantry days</label><input type="number" id="preset-pantry" name="pantry" min="1" max="3650" value="${presets.pantry}" required></div><div class="field"><label for="preset-fridge">Fridge days</label><input type="number" id="preset-fridge" name="fridge" min="1" max="3650" value="${presets.fridge}" required></div><div class="field"><label for="preset-freezer">Freezer days</label><input type="number" id="preset-freezer" name="freezer" min="1" max="3650" value="${presets.freezer}" required></div></div><p id="preset-error" class="form-error" aria-live="assertive" hidden></p><div class="form-actions"><button class="primary" type="submit">Save date presets</button><button type="button" id="reset-presets">Restore default presets</button></div></form>
     <section class="settings-box"><h2>Own your data</h2><p>Export a backup or move your items to another browser. Imports replace items with matching IDs.</p><div class="data-actions"><button id="export-json">Export JSON backup</button><button id="export-csv">Export list as CSV</button><label class="button" for="import-json">Import JSON backup</label><input id="import-json" type="file" accept="application/json,.json" hidden></div><p id="import-status" aria-live="polite"></p></section>
-    <section class="settings-box"><h2>Household license</h2><p>${paid ? 'Your existing household license is active on this browser.' : 'The free plan holds 20 active items. Household license checkout is currently unavailable.'}</p><form class="license-form" id="license-form"><label class="sr-only" for="license-token">Existing license token</label><input id="license-token" name="license" autocomplete="off" placeholder="Paste an existing license token"><button type="submit">Check existing license</button></form><p id="license-status" aria-live="polite"></p>${paid ? `<div class="data-actions"><a class="button primary" href="/print-all${demoMode ? '?demo=1' : ''}" data-link>Print all active labels</a><button id="remove-license" class="danger">Remove license from this browser</button></div>` : ''}</section>
+    ${licenseControls}
   </main>`;
 }
 
@@ -346,7 +370,7 @@ function printAllPage() {
 
 function render() {
   const path = location.pathname;
-  demoMode = path === '/demo' || new URLSearchParams(location.search).get('demo') === '1';
+  syncDemoMode();
   setRouteMetadata(path);
   let content: string;
   if (path === '/' || path === '/demo') content = homePage();
@@ -436,8 +460,9 @@ function bindEvents() {
     event.preventDefault();
     history.pushState({}, '', next.pathname + next.search + next.hash);
     const wasDemo = demoMode;
-    const willDemo = next.pathname === '/demo' || next.searchParams.get('demo') === '1';
+    const willDemo = isDemoUrl(next);
     demoMode = willDemo;
+    if (demoMode) paid = false;
     if (wasDemo !== willDemo) await loadData();
     render();
     window.scrollTo(0, next.hash ? document.querySelector(next.hash)?.getBoundingClientRect().top ?? 0 : 0);
@@ -498,6 +523,7 @@ function bindEvents() {
   document.querySelector<HTMLInputElement>('#import-json')?.addEventListener('change', importBackup);
   document.querySelector<HTMLFormElement>('#license-form')?.addEventListener('submit', async event => {
     event.preventDefault();
+    if (demoMode) return;
     const token = String(new FormData(event.currentTarget as HTMLFormElement).get('license') ?? '').trim();
     const status = document.querySelector<HTMLElement>('#license-status')!;
     if (!token) { status.textContent = 'Paste an existing license token to check it.'; return; }
@@ -542,7 +568,7 @@ async function importBackup(event: Event) {
   input.value = '';
 }
 
-window.addEventListener('popstate', async () => { await loadData(); render(); const heading = document.querySelector<HTMLElement>('h1'); if (heading) { heading.tabIndex = -1; heading.focus(); } });
+window.addEventListener('popstate', async () => { syncDemoMode(); await loadData(); render(); const heading = document.querySelector<HTMLElement>('h1'); if (heading) { heading.tabIndex = -1; heading.focus(); } });
 window.addEventListener('online', updateConnectionStatus);
 window.addEventListener('offline', updateConnectionStatus);
 

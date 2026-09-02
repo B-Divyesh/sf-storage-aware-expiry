@@ -4,5 +4,5 @@
 - Sample: five realistic items across pantry, fridge, and freezer. Their dates are relative to the current day.
 - Reset: choose **Reset demo** in the persistent banner.
 - Leave: choose **Start for real**. No sample item is copied.
-- Storage namespace: demo changes use the separate session-only key `demo:storage-aware-expiry:v1`. Saved items use a separate browser database. Demo mode never opens saved-item storage.
+- Storage namespace: demo changes use the separate session-only key `demo:storage-aware-expiry:v1`. Saved items use a separate browser database. Demo mode never opens saved-item storage or reads, writes, or removes the real license keys. A `license` query value on a demo URL is ignored.
 - Offline check: visit the demo once, wait for the service worker, disconnect, and reload `/demo`.

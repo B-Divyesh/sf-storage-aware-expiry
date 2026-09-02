@@ -71,10 +71,10 @@
   },
   {
     "id": "demo-isolation",
-    "claim": "Demo changes are separate from real inventory and can be reset.",
+    "claim": "Demo changes are separate from real inventory and license state, and can be reset.",
     "where": "demo banner and demo documentation",
     "test": "npm test -- --grep @claim:demo-isolation",
-    "sandbox": "fresh browser context at /demo; add a sixth sample, reset, then start for real and assert an empty list"
+    "sandbox": "fresh browser context seeded with real license keys; visit /demo, /settings?demo=1, and /demo?license=…; assert unchanged keys and no paid UI, then reset sample items and start for real"
   },
   {
     "id": "json-backup",
