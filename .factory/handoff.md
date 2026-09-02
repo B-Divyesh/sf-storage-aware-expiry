@@ -26,6 +26,7 @@ Completed 2 September 2026 for work order `storage-aware-expiry-repair-2`.
 - In a separate live browser context, the active service worker updated successfully, then `/demo` reloaded offline with **Baby spinach** and the offline notice. The demo request recording contained only `https://storage-aware-expiry.sociobot.in` and browser console/page errors were empty.
 - Live link crawl covered all seven public route views, including the true 404 page. All **15** distinct non-fragment public HTTP(S) links returned successful responses; this includes `https://hello-factory.sociobot.in/` (HTTP 200). `mailto:` and same-page fragment links were excluded because they do not make HTTP requests. The 404 document itself returns HTTP 404 and its footer contains only the live storefront hostname.
 - Deployed identity matches the built artifact byte-for-byte for `index.html`, `manifest.webmanifest`, `sw.js`, and the fingerprinted JS/CSS. Live headers include HSTS, CSP with `frame-ancestors 'none'`, nosniff, strict-origin referrer policy, permissions policy, revalidating HTML, and immutable fingerprinted assets.
+- Fresh live Lighthouse (mobile) scored **100 Performance / 100 Accessibility / 100 Best Practices / 100 SEO**; FCP was 0.9 s, LCP 1.2 s, and CLS 0. Report: `/tmp/storage-aware-expiry-repair-2-lighthouse.json`.
 
 ---
 
