@@ -26,4 +26,5 @@ Candidate `fe57bc15aa6dbee4a0e876e0bf166658c0834823` was repaired in commit `b2f
 - Quality: `npm run lint` and `npm run build` passed. Build output has 33.26 KB raw / 10.55 KB gzip JS and 14.79 KB raw / 4.19 KB gzip CSS.
 - Local URL check: `/opt/fleet/lib/verify-url.sh http://127.0.0.1:4173/ /tmp/storage-aware-expiry-verify` passed with no console errors, one h1, `lang=en`, `main`, and complete image/button labelling.
 - Axe is executed in the Playwright integration on all main routes and the 390 px dark/reduced-motion demo: no serious or critical findings. The standalone `@axe-core/cli` could not start because its bundled ChromeDriver supports Chrome 152 while the supplied Playwright Chromium is 145.
-- Final live verification is recorded in the handoff after deployment.
+- Live after deployment: `https://storage-aware-expiry.sociobot.in/demo` cold-loaded with title “Demo — Storage-Aware Expiry”; a sample ticket began at y=735.8 in the 390 × 844 viewport, with zero console errors and zero serious/critical Axe findings. Screenshot: `/tmp/storage-aware-expiry-live-demo-390.png`.
+- Live routing: `/not-a-real-page` returned HTTP 404 and its branded document has the Page not found h1 and page-specific metadata; `/demo` returned HTTP 200.

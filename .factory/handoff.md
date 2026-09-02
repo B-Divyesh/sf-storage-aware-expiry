@@ -37,7 +37,11 @@ Open `http://127.0.0.1:5173/demo` for the isolated sample. The production build 
 
 ## Deployment and live evidence
 
-Pending the scoped Static Web App deployment and cold live recheck in this work order.
+- Pushed commits `b2f08ee6b5913e6ac692b3687ced731daee54e0e`, `6604b438774d685f7dc45274a70f726e5e7d6bce`, and `0df62c13672f628443c1416cc5d5cff2a3b36f75` to `main`.
+- Deployed `dist/` with the scoped Static Web App `sf-storage-aware-expiry` to production. No other resource was read or changed.
+- Cold live home check passed: `https://storage-aware-expiry.sociobot.in/` returned 200 and `verify-url.sh` reported title, `lang=en`, exactly one h1, main, complete image/button labels, and no console errors.
+- Cold live demo check passed at 390 × 844: title `Demo — Storage-Aware Expiry`; its first sample ticket started at y=735.8 (inside the initial viewport); zero console errors and zero serious/critical Axe findings. Screenshot: `/tmp/storage-aware-expiry-live-demo-390.png`.
+- Live routing check passed: `/demo` returned 200; `/not-a-real-page` returned a true **404** with the branded Page not found document and route-specific metadata.
 
 ---
 
