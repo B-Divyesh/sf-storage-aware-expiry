@@ -42,6 +42,7 @@ Open `http://127.0.0.1:5173/demo` for the isolated sample. The production build 
 - Cold live home check passed: `https://storage-aware-expiry.sociobot.in/` returned 200 and `verify-url.sh` reported title, `lang=en`, exactly one h1, main, complete image/button labels, and no console errors.
 - Cold live demo check passed at 390 × 844: title `Demo — Storage-Aware Expiry`; its first sample ticket started at y=735.8 (inside the initial viewport); zero console errors and zero serious/critical Axe findings. Screenshot: `/tmp/storage-aware-expiry-live-demo-390.png`.
 - Live routing check passed: `/demo` returned 200; `/not-a-real-page` returned a true **404** with the branded Page not found document and route-specific metadata.
+- Final cold-browser finding smoke passed for `?demo=1`, `/settings?demo=1`, `/privacy?demo=1`, `/terms?demo=1`, and `/print/sample-soup?demo=1`: banner controls, planned-date language, explicit item actions, external footer text, headings, and console were all checked.
 
 ---
 
