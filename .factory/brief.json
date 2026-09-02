@@ -1,0 +1,14 @@
+{
+  "slug": "storage-aware-expiry",
+  "title": "Storage-Aware Expiry",
+  "summary": "Plan what to use first with dates that change by storage place.",
+  "artifact_class": "pwa-offline",
+  "user": "A household tracking pantry, fridge, and freezer stock without full grocery accounting.",
+  "smallest_useful_product": "Offline item cards with storage place, frozen-on date, shelf-life presets, a use-first queue, and printable freezer labels.",
+  "monetization": "one-time",
+  "constraints": [
+    "Dates are planning reminders, not food-safety advice.",
+    "All inventory data stays in the browser.",
+    "Labels print through the browser in v1."
+  ]
+}
